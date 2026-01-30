@@ -1,7 +1,9 @@
 ﻿# 🌌 CHANGELOG - TRANSCENDANCE
 
-## [Beta 1.2.3] - 2026-01-30
-### Fix
-- **Core :** Correction de l'erreur TypeError (reading 'scales'). Utilisation du contexte interne pour les calculs de zoom pendant l'init.
-- **UI :** Stabilisation de l'affichage des trimestres (T1..T4) sur l'axe temporel.
-- **Labels :** Correction de la logique d'affichage hybride (fixes vs surgissants).
+## [Beta 1.2.5] - 2026-01-30
+### Ajouté
+- **UI :** Restauration des connecteurs (fils) entre points et étiquettes.
+- **UI :** Centrage du bouton 'Retour vers le futur' et harmonisation de la barre HUD.
+- **UX :** 'Mode Focus' activé : le clic sur une catégorie estompe les autres fils.
+- **UX :** Bulles surgissantes avec icônes, bordures colorées et angles arrondis.
+- **Branding :** Mise à jour de la séquence de boot et des titres.

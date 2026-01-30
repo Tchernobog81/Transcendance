@@ -55,7 +55,7 @@ def analyze_event(title, summary, link):
     return event
 
 def run_veille():
-    print("--- TRANSCENDANCE SENTINEL Beta 1.0.0 : START VEILLE ---")
+    print("--- TRANSCENDANCE SENTINEL Beta 1.2.5 : START VEILLE ---")
     if not CLOUD_URL:
         print("Erreur : CLOUD_URL manquante.")
         return

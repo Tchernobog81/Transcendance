@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>TRANSCENDANCE : Beta 1.2.3</title>
+    <title>TRANSCENDANCE : Beta 1.2.5</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,90 +19,108 @@
         .brand-header { padding: 15px; border-bottom: 1px solid var(--border); }
         .brand-title { font-size: 10px; font-weight: 900; letter-spacing: 0.15em; color: #666; text-transform: uppercase; }
         .brand-version { color: #10b981; }
-        #flux-container { flex: 0 0 35%; border-bottom: 1px solid var(--border); padding: 15px; overflow: hidden; display: flex; flex-direction: column; }
         .section-title { font-size: 10px; color: var(--accent); font-weight: 800; text-transform: uppercase; margin-bottom: 8px; display: flex; justify-content: space-between; }
         #activity-list { overflow-y: auto; list-style: none; padding: 0; margin: 0; flex: 1; font-size: 10px; color: #bbb; }
         #legend-container { flex: 1; padding: 15px; overflow-y: auto; }
-        .legend-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; font-size: 9px; font-weight: 700; color: #888; cursor: pointer; }
+        .legend-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; font-size: 9px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
         main { flex: 1; position: relative; height: 100%; background: var(--bg); display: flex; flex-direction: column; }
-        .top-bar { height: 40px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; z-index: 30; padding: 0 15px; }
-        .bttf-btn { background: linear-gradient(180deg, #ff9d00 0%, #ffff00 100%); color: black; padding: 5px 12px; border-radius: 2px; font-weight: 900; font-style: italic; transform: skewX(-10deg); font-size: 10px; cursor: pointer; border: none; }
-        #loading-screen { position: fixed; inset: 0; background: #010102; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s; }
-        .boot-title { font-size: 1.5rem; font-weight: 900; letter-spacing: 0.5em; text-transform: uppercase; }
-        #label-float { position: fixed; pointer-events: none; background: rgba(0,0,0,0.9); border: 1px solid #fff; color: #fff; padding: 4px 8px; z-index: 4000; display: none; font-size: 9px; border-radius: 2px; font-weight: bold; }
+        .top-bar { height: 40px; border-bottom: 1px solid var(--border); display: flex; align-items: center; z-index: 30; padding: 0 15px; }
+        .bttf-btn { background: linear-gradient(180deg, #ff9d00 0%, #ffff00 100%); color: black; padding: 5px 15px; border-radius: 2px; font-weight: 900; font-style: italic; transform: skewX(-10deg); font-size: 10px; cursor: pointer; border: none; box-shadow: 0 0 15px rgba(255, 157, 0, 0.3); }
+        
+        /* Bulle Surgissante Stylisée */
+        #label-float { 
+            position: fixed; pointer-events: none; background: rgba(0,0,0,0.95); 
+            border: 1px solid #fff; color: #fff; padding: 6px 12px; 
+            z-index: 4000; display: none; font-size: 10px; border-radius: 4px; font-weight: bold;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5); align-items: center; gap: 8px;
+        }
+        .float-icon { font-size: 14px; opacity: 0.8; }
+
         #detail-card { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 550px; background: rgba(5,5,8,0.98); border: 1px solid #333; padding: 1.5rem; z-index: 5000; display: none; box-shadow: 0 0 50px #000; }
-        .pharmakon-bar { height: 4px; border-radius: 2px; background: #222; overflow: hidden; display: flex; margin: 10px 0; }
+        .pharmakon-bar { height: 6px; border-radius: 3px; background: #222; overflow: hidden; display: flex; margin: 10px 0; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
-    <div id="loading-screen">
-        <div class="boot-title">Transcendance</div>
-        <div class="text-[10px] text-zinc-600 mt-2 uppercase">SYSTEM Beta 1.2.3</div>
-        <div id="boot-info" class="text-[10px] text-emerald-500 mt-5 uppercase">Initialisation des protocoles...</div>
+    <div id="loading-screen" class="fixed inset-0 bg-[#010102] z-[9999] flex flex-col items-center justify-center transition-opacity duration-1000">
+        <div class="text-2xl font-black tracking-[0.5em] uppercase">Transcendance</div>
+        <div id="boot-info" class="text-[10px] text-emerald-500 mt-5 uppercase">Restauration des Fils de Convergence...</div>
     </div>
-    
+
     <div id="viewport">
         <aside>
             <div class="brand-header">
-                <div class="brand-title">Transcendance <span class="brand-version" onclick="location.reload(true)">Beta 1.2.3</span></div>
+                <div class="brand-title">Transcendance <span class="brand-version">Beta 1.2.5</span></div>
                 <div id="next-update" class="text-[9px] text-emerald-500 font-bold mt-2 uppercase">Veille : --:--</div>
             </div>
-            <div id="flux-container">
+            <div id="flux-container" class="mt-4">
                 <div class="section-title"><span>Flux Entrant</span><span id="flux-count" class="text-zinc-500">0</span></div>
-                <ul id="activity-list"></ul>
+                <ul id="activity-list" class="scrollbar-hide"></ul>
             </div>
             <div id="legend-container"></div>
         </aside>
         <main>
             <div class="top-bar">
-                <div class="flex gap-2">
-                    <button onclick="zoomManual(1.2)" class="text-white bg-zinc-900 border border-zinc-700 px-2 rounded cursor-pointer hover:border-amber-500 font-bold">+</button>
-                    <button onclick="zoomManual(0.8)" class="text-white bg-zinc-900 border border-zinc-700 px-2 rounded cursor-pointer hover:border-amber-500 font-bold">-</button>
+                <div class="flex gap-2 w-1/4">
+                    <button onclick="zoomManual(1.2)" class="text-white bg-zinc-900 border border-zinc-700 w-8 h-8 rounded cursor-pointer hover:border-amber-500 font-bold">+</button>
+                    <button onclick="zoomManual(0.8)" class="text-white bg-zinc-900 border border-zinc-700 w-8 h-8 rounded cursor-pointer hover:border-amber-500 font-bold">-</button>
                 </div>
-                <button onclick="resetView()" class="bttf-btn">RETOUR VERS LE FUTUR</button>
+                <div class="flex-1 flex justify-center">
+                    <button onclick="resetView()" class="bttf-btn">RETOUR VERS LE FUTUR</button>
+                </div>
+                <div class="w-1/4"></div>
             </div>
             <div class="relative flex-1 w-full"><canvas id="loomChart"></canvas></div>
         </main>
     </div>
 
-    <div id="label-float"></div>
+    <div id="label-float"><span class="float-icon"></span><span id="float-text"></span></div>
 
     <div id="detail-card">
-        <div id="card-header" class="cursor-move border-b border-zinc-900 pb-2 mb-4">
+        <div id="card-header" class="cursor-move border-b border-zinc-900 pb-3 mb-4">
             <button onclick="closeDetail()" class="absolute top-4 right-4 text-zinc-500 hover:text-white cursor-pointer text-2xl">&times;</button>
             <h2 id="card-title" class="text-xl font-black text-amber-500 uppercase"></h2>
-            <div class="text-[9px] text-zinc-500 mt-1 uppercase">Source: <b id="card-who" class="text-zinc-300"></b> | <b id="card-date" class="text-zinc-300"></b></div>
+            <div class="text-[9px] text-zinc-500 mt-1 uppercase font-bold">Source: <b id="card-who" class="text-zinc-300"></b> | <b id="card-date" class="text-zinc-300"></b></div>
         </div>
         <div id="card-nav" class="flex flex-wrap gap-2 mb-4"></div>
-        <p id="card-desc" class="text-zinc-300 italic text-sm mb-4 leading-relaxed"></p>
-        <div class="grid grid-cols-2 gap-4 text-[10px] border-t border-zinc-800 pt-4">
+        <p id="card-desc" class="text-zinc-300 italic text-sm mb-6 leading-relaxed"></p>
+        <div class="grid grid-cols-2 gap-6 text-[10px] border-t border-zinc-800 pt-4">
              <div>
-                Analyse Pharmakon
+                ANALYSE PHARMAKON
                 <div class="pharmakon-bar"><div id="pharma-remedy" class="bg-emerald-500 h-full"></div><div id="pharma-poison" class="bg-red-500 h-full"></div></div>
-                <div class="flex justify-between font-bold"><span id="txt-remedy" class="text-emerald-400"></span><span id="txt-poison" class="text-red-400"></span></div>
+                <div class="flex justify-between font-bold uppercase"><span id="txt-remedy" class="text-emerald-400"></span><span id="txt-poison" class="text-red-400"></span></div>
              </div>
-             <div>Phase S-Curve: <b id="card-scurve" class="text-zinc-100"></b> / 5</div>
-             <div class="col-span-2 text-zinc-400 leading-tight">Convergence: <p id="card-conv" class="mt-1"></p></div>
+             <div>CYCLE EN S: <br><span class="text-lg font-black text-zinc-100">PHASE <span id="card-scurve"></span> / 5</span></div>
+             <div class="col-span-2 text-zinc-400 leading-tight uppercase font-bold text-[9px]">Convergences: <p id="card-conv" class="mt-1 font-normal text-zinc-300 normal-case"></p></div>
         </div>
     </div>
 
     <script>
         const DATA_URL = "./loom_consolidated_v102.json";
         const COLORS = { "⚪ SINGULARITÉ": "#ffffff", "✨ NOOSPHÈRE": "#0ea5e9", "🔮 IMAGINAIRE": "#f472b6", "🟡 HARDWARE": "#fbbf24", "🔵 COGNITION": "#3b82f6", "🔴 RÉSEAU": "#ef4444", "🟣 ESPACE": "#a855f7", "🟢 BIOTECH": "#10b981", "☢️ ENTROPIE": "#f97316", "🏛️ POLITIQUE": "#d946ef" };
-        let loomChart, allData = [], isHoveringLabel = false;
+        const ICONS = { "⚪ SINGULARITÉ": "🧠", "✨ NOOSPHÈRE": "🌍", "🔮 IMAGINAIRE": "📚", "🟡 HARDWARE": "💾", "🔵 COGNITION": "⚡", "🔴 RÉSEAU": "🌐", "🟣 ESPACE": "🚀", "🟢 BIOTECH": "🧬", "☢️ ENTROPIE": "☢️", "🏛️ POLITIQUE": "⚖️" };
+        let loomChart, allData = [], activeCategory = null, isHoveringLabel = false;
 
-        const decToDate = v => { 
-            const y = Math.floor(v); 
-            const q = Math.floor((v - y) * 4) + 1; 
-            return 'T' + q + ' ' + y; 
+        const decToDate = v => { const y = Math.floor(v); const q = Math.floor((v - y) * 4) + 1; return 'T' + q + ' ' + y; };
+
+        const connectorPlugin = {
+            id: 'connectorPlugin',
+            afterDatasetsDraw: (chart) => {
+                const ctx = chart.ctx;
+                chart.data.datasets.forEach((dataset, i) => {
+                    const meta = chart.getDatasetMeta(i);
+                    if (meta.hidden || (activeCategory && dataset.label !== activeCategory)) return;
+                    meta.data.forEach((element, index) => {
+                        const d = dataset.data[index];
+                        if (!d.tipping && d.category !== "☢️ ENTROPIE") return; 
+                        const model = element.tooltipPosition();
+                        ctx.save(); ctx.beginPath(); ctx.lineWidth = 1; ctx.strokeStyle = dataset.borderColor;
+                        ctx.moveTo(model.x, model.y - 4); ctx.lineTo(model.x, model.y - 12);
+                        ctx.stroke(); ctx.restore();
+                    });
+                });
+            }
         };
-
-        function removeLoading() {
-            const ls = document.getElementById('loading-screen');
-            const vp = document.getElementById('viewport');
-            if(ls) { ls.style.opacity = '0'; setTimeout(() => ls.remove(), 800); }
-            if(vp) vp.style.opacity = '1';
-        }
 
         async function loadData() {
             try {
@@ -110,9 +129,9 @@
                 updateChart(allData);
                 updateLegend(allData);
                 updateFlux(allData);
-                setTimeout(removeLoading, 1500);
+                setTimeout(() => { document.getElementById('loading-screen').style.opacity = '0'; setTimeout(() => document.getElementById('loading-screen').remove(), 1000); document.getElementById('viewport').style.opacity = '1'; }, 1500);
                 setTimeout(resetView, 1600);
-            } catch(e) { console.error(e); removeLoading(); }
+            } catch(e) { console.error(e); }
         }
 
         function updateChart(data) {
@@ -120,7 +139,13 @@
             const strands = {};
             data.sort((a,b) => a.year - b.year).forEach(d => {
                 const cat = d.category || "DEFAUT";
-                if (!strands[cat]) strands[cat] = { label: cat, borderColor: COLORS[cat] || "#9ca3af", backgroundColor: COLORS[cat] || "#9ca3af", data: [], pointRadius: 4, tension: 0.4, borderWidth: 2 };
+                const baseColor = COLORS[cat] || "#9ca3af";
+                const isDimmed = activeCategory && cat !== activeCategory;
+                if (!strands[cat]) strands[cat] = { 
+                    label: cat, borderColor: baseColor, backgroundColor: baseColor, data: [], 
+                    pointRadius: 4, tension: 0.4, borderWidth: activeCategory === cat ? 3 : 2,
+                    segment: { borderColor: ctx => isDimmed ? baseColor + '1A' : baseColor }
+                };
                 strands[cat].data.push({ x: d.year, y: d.value, ...d });
             });
             loomChart.data.datasets = Object.values(strands);
@@ -131,16 +156,19 @@
             const container = document.getElementById('legend-container');
             const counts = {};
             data.forEach(d => counts[d.category] = (counts[d.category] || 0) + 1);
-            container.innerHTML = '<div class="text-[10px] text-zinc-600 mb-2 uppercase">Cumul : ' + data.length + ' points</div>';
+            container.innerHTML = '<div class="text-[10px] text-zinc-600 mb-2 uppercase font-bold mt-4">Cumul : ' + data.length + ' points</div>';
             container.innerHTML += '<div class="section-title">Fils de Convergence</div>';
             Object.keys(COLORS).sort().forEach(cat => {
                 if (!counts[cat]) return;
                 const div = document.createElement('div');
                 div.className = 'legend-item';
-                div.innerHTML = '<span>● ' + cat + '</span><span>' + counts[cat] + '</span>';
+                div.style.color = COLORS[cat];
+                if (activeCategory && activeCategory !== cat) div.style.opacity = "0.2";
+                div.innerHTML = '<span>● ' + cat + '</span><span class="text-zinc-600">' + counts[cat] + '</span>';
                 div.onclick = () => {
-                    const ds = loomChart.data.datasets.find(d => d.label === cat);
-                    if(ds) { ds.hidden = !ds.hidden; loomChart.update(); div.style.opacity = ds.hidden ? '0.3' : '1'; }
+                    activeCategory = (activeCategory === cat) ? null : cat;
+                    updateChart(allData);
+                    updateLegend(allData);
                 };
                 container.appendChild(div);
             });
@@ -153,7 +181,7 @@
             data.slice(-15).reverse().forEach(d => {
                 const li = document.createElement('li');
                 li.className = "mb-2 leading-tight cursor-pointer hover:text-white";
-                li.innerHTML = '<span style="color:' + (COLORS[d.category] || '#fff') + '">●</span> ' + d.label;
+                li.innerHTML = '<span style="color:' + COLORS[d.category] + '">' + (ICONS[d.category] || '●') + '</span> ' + d.label;
                 li.onclick = () => { zoomTo(d.year); showDetail(d); };
                 list.appendChild(li);
             });
@@ -161,7 +189,7 @@
 
         function showDetail(d) {
             document.getElementById('card-title').innerText = d.label;
-            document.getElementById('card-who').innerText = d.whoWhat || "Sentinel";
+            document.getElementById('card-who').innerText = d.whoWhat || "Sentinel Bot";
             document.getElementById('card-date').innerText = decToDate(d.year);
             document.getElementById('card-desc').innerText = d.description || "Analyse en cours...";
             const rem = d.pharmakon_remedy_percent || 50;
@@ -170,103 +198,92 @@
             document.getElementById('txt-remedy').innerText = rem + '%';
             document.getElementById('txt-poison').innerText = (100-rem) + '%';
             document.getElementById('card-scurve').innerText = d.s_curve_phase || "1";
-            document.getElementById('card-conv').innerText = d.convergences || "N/A";
+            document.getElementById('card-conv').innerText = d.convergences || d.grand_filter_analysis || "Données manquantes.";
             
-            const nav = document.getElementById('card-nav');
-            nav.innerHTML = '';
+            const nav = document.getElementById('card-nav'); nav.innerHTML = '';
             if (d.realYear) {
-                const btn = document.createElement('button'); btn.className = "text-[9px] bg-zinc-800 p-1 rounded border border-zinc-600 cursor-pointer";
-                btn.innerText = "▶ Réalisation (" + Math.floor(d.realYear) + ")";
-                btn.onclick = () => jumpToEvent(d.realYear);
-                nav.appendChild(btn);
+                const btn = document.createElement('button'); btn.className = "text-[9px] bg-zinc-800 p-1 px-2 rounded border border-amber-500 text-amber-500 font-bold cursor-pointer";
+                btn.innerText = "▶ RÉALISATION (" + Math.floor(d.realYear) + ")";
+                btn.onclick = () => jumpToEvent(d.realYear); nav.appendChild(btn);
+            }
+            if (d.predictedBy) {
+                const preds = Array.isArray(d.predictedBy) ? d.predictedBy : [d.predictedBy];
+                preds.forEach(p => {
+                    const btn = document.createElement('button'); btn.className = "text-[9px] bg-zinc-800 p-1 px-2 rounded border border-pink-500 text-pink-500 font-bold cursor-pointer";
+                    btn.innerText = "◀ PRÉDIT PAR : " + p;
+                    btn.onclick = () => jumpToEvent(null, p); nav.appendChild(btn);
+                });
             }
             document.getElementById('detail-card').style.display = 'block';
         }
 
-        function jumpToEvent(y) {
-            const t = allData.find(e => Math.abs(e.year - y) < 0.5);
+        function jumpToEvent(y, label = null) {
+            const t = label ? allData.find(e => e.label === label) : allData.find(e => Math.abs(e.year - y) < 0.5);
             if (t) { zoomTo(t.year); setTimeout(() => showDetail(t), 600); }
         }
 
         function zoomManual(l) { if(loomChart) loomChart.zoom(l); }
-        function zoomTo(y) { loomChart.options.scales.x.min = y-10; loomChart.options.scales.x.max = y+10; loomChart.update(); }
+        function zoomTo(y) { loomChart.options.scales.x.min = y-8; loomChart.options.scales.x.max = y+8; loomChart.update(); }
         function resetView() { zoomTo(1985); }
         function closeDetail() { document.getElementById('detail-card').style.display = 'none'; }
 
+        // Draggable
+        const card = document.getElementById('detail-card'); const header = document.getElementById('card-header');
+        let isDragging = false, offset = [0,0];
+        header.addEventListener('mousedown', e => { isDragging = true; offset = [card.offsetLeft - e.clientX, card.offsetTop - e.clientY]; });
+        document.addEventListener('mouseup', () => isDragging = false);
+        document.addEventListener('mousemove', e => { if (isDragging) { card.style.left = Math.max(100, Math.min(window.innerWidth - 100, e.clientX + offset[0])) + 'px'; card.style.top = Math.max(100, Math.min(window.innerHeight - 100, e.clientY + offset[1])) + 'px'; card.style.transform = 'translate(-50%, -50%)'; } });
+
         function updateCountdown() {
-            const now = new Date();
-            const hours = now.getHours();
-            const nextHour = 3 * Math.ceil((hours + 0.1) / 3);
-            const nextUpdate = new Date(now);
-            nextUpdate.setHours(nextHour, 0, 0, 0);
-            const diff = nextUpdate - now;
-            const hh = Math.floor(diff / 3600000);
-            const mm = Math.floor((diff % 3600000) / 60000);
-            const el = document.getElementById('next-update');
-            if(el) el.innerText = "Veille : " + (hh < 10 ? "0"+hh : hh) + ":" + (mm < 10 ? "0"+mm : mm);
+            const now = new Date(); const hours = now.getHours(); const nextHour = 3 * Math.ceil((hours + 0.1) / 3);
+            const nextUpdate = new Date(now); nextUpdate.setHours(nextHour, 0, 0, 0);
+            const diff = nextUpdate - now; const hh = Math.floor(diff / 3600000); const mm = Math.floor((diff % 3600000) / 60000);
+            const el = document.getElementById('next-update'); if(el) el.innerText = "Veille : " + (hh < 10 ? "0"+hh : hh) + ":" + (mm < 10 ? "0"+mm : mm);
         }
 
         window.onload = () => {
-            // Master Bypass 4s
-            setTimeout(removeLoading, 4000);
-
-            try {
-                const ctx = document.getElementById('loomChart');
-                loomChart = new Chart(ctx, {
-                    type: 'line', data: { datasets: [] },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        onHover: (e, el) => {
-                            const canvas = e.native.target;
-                            canvas.style.cursor = (el.length || isHoveringLabel) ? 'pointer' : 'default';
-                            const f = document.getElementById('label-float');
-                            if (el.length) {
-                                const d = loomChart.data.datasets[el[0].datasetIndex].data[el[0].index];
-                                if (!d.tipping && d.category !== "☢️ ENTROPIE") {
-                                    f.innerText = d.label; f.style.display = 'block'; f.style.left = (e.x + 15) + 'px'; f.style.top = (e.y - 15) + 'px';
-                                    f.style.borderColor = COLORS[d.category]; f.style.backgroundColor = COLORS[d.category] + 'E6';
-                                } else f.style.display = 'none';
+            const ctx = document.getElementById('loomChart');
+            loomChart = new Chart(ctx, {
+                type: 'line', data: { datasets: [] },
+                plugins: [connectorPlugin],
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    onHover: (e, el) => {
+                        const canvas = e.native.target; canvas.style.cursor = (el.length || isHoveringLabel) ? 'pointer' : 'default';
+                        const f = document.getElementById('label-float');
+                        if (el.length) {
+                            const d = loomChart.data.datasets[el[0].datasetIndex].data[el[0].index];
+                            if (!d.tipping && d.category !== "☢️ ENTROPIE") {
+                                f.querySelector('.float-icon').innerText = ICONS[d.category] || '●';
+                                document.getElementById('float-text').innerText = d.label;
+                                f.style.display = 'flex'; f.style.left = (e.x + 15) + 'px'; f.style.top = (e.y - 15) + 'px';
+                                f.style.borderColor = COLORS[d.category]; f.style.backgroundColor = 'rgba(0,0,0,0.95)';
                             } else f.style.display = 'none';
-                        },
-                        onClick: (e, el) => { if(el.length) showDetail(loomChart.data.datasets[el[0].datasetIndex].data[el[0].index]); },
-                        scales: {
-                            x: { 
-                                type: 'linear', grid: { color: '#111' }, 
-                                ticks: { 
-                                    color: '#666', 
-                                    callback: function(v) {
-                                        // FIX RECURSION : Utilisation de this.chart
-                                        const chart = this.chart;
-                                        const range = chart.scales.x.max - chart.scales.x.min;
-                                        return (range < 3) ? decToDate(v) : Math.floor(v);
-                                    } 
-                                } 
+                        } else f.style.display = 'none';
+                    },
+                    onClick: (e, el) => { if(el.length) showDetail(loomChart.data.datasets[el[0].datasetIndex].data[el[0].index]); },
+                    scales: {
+                        x: { type: 'linear', grid: { color: '#111' }, ticks: { color: '#666', callback: function(v){ const range = this.chart.scales.x.max - this.chart.scales.x.min; return (range < 3) ? decToDate(v) : Math.floor(v); } } },
+                        y: { type: 'linear', position: 'right', grid: { color: '#050505' } }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            color: '#fff', font: { size: 9, weight: 'bold' },
+                            backgroundColor: c => activeCategory && c.dataset.label !== activeCategory ? c.dataset.borderColor + '33' : c.dataset.borderColor,
+                            borderRadius: 2, padding: 4, offset: 12, align: 'top',
+                            display: c => {
+                                if (activeCategory && c.dataset.label !== activeCategory) return false;
+                                const d = c.dataset.data[c.dataIndex]; return d.tipping || d.category === "☢️ ENTROPIE";
                             },
-                            y: { type: 'linear', position: 'right', grid: { color: '#050505' } }
+                            formatter: v => (ICONS[v.category] || '') + ' ' + v.label,
+                            listeners: { enter: () => isHoveringLabel = true, leave: () => isHoveringLabel = false }
                         },
-                        plugins: {
-                            legend: { display: false },
-                            datalabels: {
-                                color: '#fff', font: { size: 9, weight: 'bold' },
-                                backgroundColor: c => c.dataset.borderColor,
-                                display: function(context) {
-                                    // FIX RECURSION : Utilisation de context.chart
-                                    const chart = context.chart;
-                                    const d = context.dataset.data[context.dataIndex];
-                                    const range = chart.scales.x.max - chart.scales.x.min;
-                                    return d.tipping || d.category === "☢️ ENTROPIE" || range < 20;
-                                },
-                                formatter: v => v.label, padding: 3, borderRadius: 2, clip: true,
-                                listeners: { enter: () => isHoveringLabel = true, leave: () => isHoveringLabel = false }
-                            },
-                            zoom: { zoom: { wheel: { enabled: true }, mode: 'xy' }, pan: { enabled: true, mode: 'xy' }, limits: { x: { minRange: 0.25 } } }
-                        }
+                        zoom: { zoom: { wheel: { enabled: true }, mode: 'xy' }, pan: { enabled: true, mode: 'xy' }, limits: { x: { minRange: 0.25 } } }
                     }
-                });
-            } catch(e) { console.error("Chart Crash:", e); removeLoading(); }
-            
-            setInterval(updateCountdown, 60000); updateCountdown();
-            loadData();
+                }
+            });
+            setInterval(updateCountdown, 60000); updateCountdown(); loadData();
         };
     </script>
 </body>
