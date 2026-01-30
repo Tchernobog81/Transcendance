@@ -1,4 +1,4 @@
-﻿name: Transcendance v148 🚀
+name: Transcendance v148 🚀
 
 on:
   push:
@@ -32,4 +32,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-# Refresh v148
