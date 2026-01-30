@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -43,7 +43,7 @@
     </div>
     
     <script>
-        setTimeout(() => { removeLoading(); }, 5000); // Bypass sécurité augmenté à 5s
+        setTimeout(() => { removeLoading(); }, 5000); // Bypass s�curit� augment� � 5s
 
         function removeLoading() {
             const ls = document.getElementById('loading-screen');
@@ -84,7 +84,7 @@
 
     <script>
         const CLOUD_URL = 'https://script.google.com/macros/s/AKfycbwg-ZzMeSRyoaTRV-u824eQvnd8tHYxTsk-xDSK4vhYy42OnMpFrpumj2NSEaA45gP-/exec';
-        const COLORS = { "⚪ SINGULARITÉ": "#ffffff", "✨ NOOSPHÈRE": "#0ea5e9", "🔮 IMAGINAIRE": "#f472b6", "🟡 HARDWARE": "#fbbf24", "🔵 COGNITION": "#3b82f6", "🔴 RÉSEAU": "#ef4444", "🟣 ESPACE": "#a855f7", "🟢 BIOTECH": "#10b981", "☢️ ENTROPIE": "#f97316", "🏛️ POLITIQUE": "#d946ef", "DEFAUT": "#9ca3af" };
+        const COLORS = { "? SINGULARIT�": "#ffffff", "? NOOSPH�RE": "#0ea5e9", "?? IMAGINAIRE": "#f472b6", "?? HARDWARE": "#fbbf24", "?? COGNITION": "#3b82f6", "?? R�SEAU": "#ef4444", "?? ESPACE": "#a855f7", "?? BIOTECH": "#10b981", "?? ENTROPIE": "#f97316", "??? POLITIQUE": "#d946ef", "DEFAUT": "#9ca3af" };
         let loomChart;
 
         async function loadData() {
@@ -130,7 +130,7 @@
                 if (cat === "DEFAUT" || !counts[cat]) return;
                 const div = document.createElement('div');
                 div.className = 'legend-item';
-                div.innerHTML = <span><span style="color:\">●</span> \</span><span class="text-zinc-600">\</span>;
+                div.innerHTML = <span><span style="color:\">?</span> \</span><span class="text-zinc-600">\</span>;
                 container.appendChild(div);
             });
         }
@@ -142,7 +142,7 @@
             data.slice(-20).reverse().forEach(d => {
                 const li = document.createElement('li');
                 li.className = "mb-2 flex items-start gap-2";
-                li.innerHTML = <span style="color:\">●</span> <span>\</span>;
+                li.innerHTML = <span style="color:\">?</span> <span>\</span>;
                 list.appendChild(li);
             });
         }
