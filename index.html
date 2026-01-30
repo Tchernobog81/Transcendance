@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>TRANSCENDANCE : Beta 1.0.7</title>
+    <title>TRANSCENDANCE : Beta 1.0.8</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
@@ -27,6 +27,7 @@
         main { flex: 1; position: relative; height: 100%; background: var(--bg); display: flex; flex-direction: column; }
         .top-bar { height: 40px; border-bottom: 1px solid var(--border); display: flex; justify-content: center; align-items: center; z-index: 30; }
         .bttf-btn { background: linear-gradient(180deg, #ff9d00 0%, #ffff00 100%); color: black; padding: 5px 12px; border-radius: 2px; font-weight: 900; font-style: italic; transform: skewX(-10deg); font-size: 10px; cursor: pointer; border: none; }
+        #sync-hud { padding: 10px 15px; font-size: 8px; font-weight: bold; border-top: 1px solid var(--border); color: #444; }
         #loading-screen { position: fixed; inset: 0; background: #010102; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s; }
         .boot-title { font-size: 1.5rem; font-weight: 900; letter-spacing: 0.5em; text-transform: uppercase; }
         #boot-info { font-size: 10px; color: #10b981; margin-top: 20px; font-family: 'JetBrains Mono'; height: 20px; }
@@ -37,39 +38,32 @@
 <body>
     <div id="loading-screen">
         <div class="boot-title">Transcendance</div>
-        <div class="text-[10px] text-zinc-600 mt-2 uppercase">SYSTEM Beta 1.0.7</div>
-        <div id="boot-info">Synchronisation...</div>
+        <div class="text-[10px] text-zinc-600 mt-2 uppercase">SYSTEM Beta 1.0.8</div>
+        <div id="boot-info">Initialisation...</div>
     </div>
     
     <script>
-        // MASTER BYPASS : Déblocage de force après 4 secondes
-        setTimeout(() => {
-            const ls = document.getElementById('loading-screen');
-            if(ls) { 
-                console.warn("MASTER BYPASS ACTIVÉ : Suppression forcée du loading.");
-                removeLoading(); 
-            }
-        }, 4000);
+        setTimeout(() => { removeLoading(); }, 5000); // Bypass sécurité augmenté à 5s
 
         function removeLoading() {
             const ls = document.getElementById('loading-screen');
             const vp = document.getElementById('viewport');
-            if(ls) ls.style.opacity = '0';
+            if(ls) { ls.style.opacity = '0'; setTimeout(() => ls.remove(), 800); }
             if(vp) vp.style.opacity = '1';
-            setTimeout(() => { if(ls) ls.remove(); }, 800);
         }
     </script>
 
     <div id="viewport">
         <aside>
             <div class="brand-header">
-                <div class="brand-title">Transcendance <span class="brand-version">Beta 1.0.7</span></div>
+                <div class="brand-title">Transcendance <span class="brand-version">Beta 1.0.8</span></div>
             </div>
             <div id="flux-container">
                 <div class="section-title"><span>Flux</span><span id="flux-count" class="text-zinc-500">0</span></div>
                 <ul id="activity-list" class="scrollbar-hide"></ul>
             </div>
             <div id="legend-container"></div>
+            <div id="sync-hud">CLOUD STATUS: INIT...</div>
         </aside>
         <main>
             <div class="top-bar"><button onclick="resetView()" class="bttf-btn">RETOUR VERS LE FUTUR</button></div>
@@ -84,7 +78,7 @@
         <div class="grid grid-cols-2 gap-4 text-[10px] border-t border-zinc-800 pt-4">
              <div>PHARMAKON: <br><span id="card-pharma" class="text-zinc-100 font-bold"></span></div>
              <div>S-CURVE: <br>PHASE <span id="card-scurve" class="text-zinc-100 font-bold"></span> / 5</div>
-             <div class="col-span-2">CONVERGENCE & GRAND FILTRE: <p id="card-conv" class="text-zinc-400 mt-1 leading-tight"></p></div>
+             <div class="col-span-2">CONVERGENCE: <p id="card-conv" class="text-zinc-400 mt-1 leading-tight"></p></div>
         </div>
     </div>
 
@@ -94,15 +88,23 @@
         let loomChart;
 
         async function loadData() {
+            const hud = document.getElementById('sync-hud');
             try {
                 const res = await fetch(CLOUD_URL + '?t=' + Date.now());
+                if (!res.ok) throw new Error("Status: " + res.status);
                 const json = await res.json();
+                
+                hud.innerText = "CLOUD STATUS: 200 OK (" + json.length + " items)";
+                hud.style.color = "#10b981";
+
                 updateChart(json);
                 updateLegend(json);
                 updateFlux(json);
-                setTimeout(removeLoading, 1000);
+                setTimeout(removeLoading, 500);
             } catch(e) { 
                 console.error("Sync Error:", e);
+                hud.innerText = "CLOUD STATUS: ERROR (" + e.message + ")";
+                hud.style.color = "#ef4444";
                 removeLoading();
             }
         }
@@ -112,7 +114,7 @@
             const datasets = {};
             data.sort((a,b) => a.year - b.year).forEach(d => {
                 const cat = d.category || "DEFAUT";
-                if (!datasets[cat]) datasets[cat] = { label: cat, borderColor: COLORS[cat], backgroundColor: COLORS[cat], data: [], pointRadius: 4, tension: 0.4, borderWidth: 2 };
+                if (!datasets[cat]) datasets[cat] = { label: cat, borderColor: COLORS[cat], backgroundColor: COLORS[cat], data: [], pointRadius: 4, tension: 0.4 };
                 datasets[cat].data.push({ x: d.year, y: d.value, ...d });
             });
             loomChart.data.datasets = Object.values(datasets);
@@ -121,18 +123,14 @@
 
         function updateLegend(data) {
             const container = document.getElementById('legend-container');
-            container.innerHTML = '<div class="section-title">STRANDS</div>';
             const counts = {};
             data.forEach(d => counts[d.category] = (counts[d.category] || 0) + 1);
+            container.innerHTML = '<div class="section-title">STRANDS</div>';
             Object.keys(COLORS).sort().forEach(cat => {
                 if (cat === "DEFAUT" || !counts[cat]) return;
                 const div = document.createElement('div');
                 div.className = 'legend-item';
                 div.innerHTML = <span><span style="color:\">●</span> \</span><span class="text-zinc-600">\</span>;
-                div.onclick = () => {
-                    const ds = loomChart.data.datasets.find(d => d.label === cat);
-                    if(ds) { ds.hidden = !ds.hidden; loomChart.update(); div.style.opacity = ds.hidden ? '0.3' : '1'; }
-                };
                 container.appendChild(div);
             });
         }
@@ -143,19 +141,10 @@
             document.getElementById('flux-count').innerText = data.length;
             data.slice(-20).reverse().forEach(d => {
                 const li = document.createElement('li');
-                li.className = "mb-2 leading-tight flex items-start gap-2";
+                li.className = "mb-2 flex items-start gap-2";
                 li.innerHTML = <span style="color:\">●</span> <span>\</span>;
                 list.appendChild(li);
             });
-        }
-
-        function showDetail(d) {
-            document.getElementById('card-title').innerText = d.label;
-            document.getElementById('card-desc').innerText = d.description || "Analyse indisponible.";
-            document.getElementById('card-pharma').innerText = \% REMÈDE / \% POISON;
-            document.getElementById('card-scurve').innerText = d.s_curve_phase || "?";
-            document.getElementById('card-conv').innerText = d.convergences || "Maillage en cours...";
-            document.getElementById('detail-card').style.display = 'block';
         }
 
         function zoomTo(year) { if(loomChart) { loomChart.options.scales.x.min = year - 10; loomChart.options.scales.x.max = year + 10; loomChart.update(); } }
@@ -164,34 +153,16 @@
 
         window.onload = () => {
             try {
-                const ctx = document.getElementById('loomChart');
-                loomChart = new Chart(ctx, {
-                    type: 'line',
-                    data: { datasets: [] },
+                loomChart = new Chart(document.getElementById('loomChart'), {
+                    type: 'line', data: { datasets: [] },
                     options: {
                         responsive: true, maintainAspectRatio: false,
                         onClick: (e, el) => { if(el.length) showDetail(loomChart.data.datasets[el[0].datasetIndex].data[el[0].index]); },
-                        scales: {
-                            x: { type: 'linear', grid: { color: '#111' }, ticks: { color: '#444' } },
-                            y: { type: 'linear', position: 'right', grid: { color: '#050505' }, ticks: { display: false } }
-                        },
-                        plugins: {
-                            legend: { display: false },
-                            datalabels: {
-                                color: '#fff', font: { size: 9, weight: 'bold' },
-                                backgroundColor: c => c.dataset.borderColor,
-                                display: (context) => {
-                                    const zoom = context.chart.scales.x.max - context.chart.scales.x.min;
-                                    return context.dataset.data[context.dataIndex].tipping || zoom < 40;
-                                },
-                                formatter: v => v.label,
-                                padding: 3, borderRadius: 2, clip: true
-                            },
-                            zoom: { zoom: { wheel: { enabled: true }, mode: 'x' }, pan: { enabled: true, mode: 'x' } }
-                        }
+                        scales: { x: { type: 'linear', grid: { color: '#111' } }, y: { type: 'linear', position: 'right', grid: { color: '#050505' } } },
+                        plugins: { legend: { display: false }, datalabels: { color: '#fff', formatter: v => v.label, display: c => c.chart.scales.x.max - c.chart.scales.x.min < 40 } }
                     }
                 });
-            } catch(e) { console.error("Chart Init Error:", e); }
+            } catch(e) { console.error("Chart Error:", e); }
             loadData();
         };
     </script>
