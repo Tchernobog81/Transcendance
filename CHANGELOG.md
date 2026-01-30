@@ -1,8 +1,9 @@
 ﻿# 🌌 CHANGELOG - TRANSCENDANCE
 
-## [Beta 1.1.7] - 2026-01-30
+## [Beta 1.1.8] - 2026-01-30
 ### Ajouté
-- **Navigation :** Ajout des boutons de zoom manuel [ + ] et [ - ] dans la top-bar.
-- **Navigation :** Activation du Pan/Zoom sur les axes X et Y (liberté totale de déplacement).
-- **UX :** Centrage automatique sur 'Retour vers le Futur' (1985) au démarrage.
-- **UX :** Amélioration du maillage visuel des Strands.
+- **Temps :** Axe X gérant les trimestres (T1..T4) sans décimales.
+- **Zoom :** Profondeur maximale fixée à 1 trimestre. Zoom molette réactivé.
+- **Labels :** Système hybride étiquettes permanentes (Majeurs/Entropie) et surgissantes (Mineurs).
+- **UI :** Traduction française intégrale et compteurs d'événements.
+- **Interactivité :** Curseur dynamique (pointer) sur tous les éléments cliquables.

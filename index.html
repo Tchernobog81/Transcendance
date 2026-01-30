@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>TRANSCENDANCE : Beta 1.1.7</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>TRANSCENDANCE : Beta 1.1.8</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
@@ -12,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #010102; --sidebar-bg: #050508; --border: rgba(255,255,255,0.08); --accent: #fbbf24; }
-        html, body { margin: 0; padding: 0; width: 100vw; height: 100dvh; background-color: var(--bg); overflow: hidden; position: fixed; font-family: 'JetBrains Mono', monospace; color: white; }
+        html, body { margin: 0; padding: 0; width: 100vw; height: 100dvh; background-color: var(--bg); overflow: hidden; position: fixed; font-family: 'JetBrains Mono', monospace; color: white; user-select: none; }
         #viewport { position: absolute; inset: 0; display: flex; opacity: 0; transition: opacity 1s; }
         aside { width: 240px; height: 100%; background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 20; }
         .brand-header { padding: 15px; border-bottom: 1px solid var(--border); }
@@ -26,56 +27,74 @@
         main { flex: 1; position: relative; height: 100%; background: var(--bg); display: flex; flex-direction: column; }
         .top-bar { height: 40px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; z-index: 30; padding: 0 15px; }
         .bttf-btn { background: linear-gradient(180deg, #ff9d00 0%, #ffff00 100%); color: black; padding: 5px 12px; border-radius: 2px; font-weight: 900; font-style: italic; transform: skewX(-10deg); font-size: 10px; cursor: pointer; border: none; }
-        .nav-btn { background: #111; border: 1px solid #333; color: #888; width: 24px; height: 24px; border-radius: 2px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
-        .nav-btn:hover { border-color: var(--accent); color: white; }
-        #loading-screen { position: fixed; inset: 0; background: #010102; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s; }
-        .boot-title { font-size: 1.5rem; font-weight: 900; letter-spacing: 0.5em; text-transform: uppercase; }
-        #sync-hud { padding: 10px 15px; font-size: 8px; font-weight: bold; border-top: 1px solid var(--border); color: #444; }
+        
+        /* Étiquette Surgissante */
+        #label-float { 
+            position: fixed; pointer-events: none; background: rgba(0,0,0,0.9); 
+            border: 1px solid var(--accent); color: #fff; padding: 5px 10px; 
+            z-index: 4000; display: none; font-size: 10px; border-radius: 2px; font-weight: bold;
+        }
+
+        #detail-card { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 600px; background: rgba(5,5,8,0.98); border: 1px solid #333; padding: 2rem; z-index: 5000; display: none; box-shadow: 0 0 50px #000; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
-    <div id="loading-screen">
-        <div class="boot-title">Transcendance</div>
-        <div class="text-[10px] text-zinc-600 mt-2 uppercase">SYSTÈME Beta 1.1.7</div>
-        <div id="boot-info" class="text-[10px] text-emerald-500 mt-5">Chargement de la conscience...</div>
+    <div id="loading-screen" class="fixed inset-0 bg-[#010102] z-[9999] flex flex-col items-center justify-center transition-opacity duration-1000">
+        <div class="text-2xl font-black tracking-[0.5em] uppercase">Transcendance</div>
+        <div id="boot-info" class="text-[10px] text-emerald-500 mt-5">Initialisation...</div>
     </div>
-    
+
     <div id="viewport">
         <aside>
             <div class="brand-header">
-                <div class="brand-title">Transcendance <span class="brand-version">Beta 1.1.7</span></div>
+                <div class="brand-title">Transcendance <span class="brand-version">Beta 1.1.8</span></div>
             </div>
             <div id="flux-container">
                 <div class="section-title"><span>Flux Entrant</span><span id="flux-count" class="text-zinc-500">0</span></div>
-                <ul id="activity-list"></ul>
+                <ul id="activity-list" class="scrollbar-hide"></ul>
             </div>
             <div id="legend-container"></div>
-            <div id="sync-hud">DB: NATIVE</div>
         </aside>
         <main>
             <div class="top-bar">
                 <div class="flex gap-2">
-                    <button onclick="zoomManual(1.2)" class="nav-btn">+</button>
-                    <button onclick="zoomManual(0.8)" class="nav-btn">-</button>
+                    <button onclick="zoomManual(1.2)" class="text-white bg-zinc-900 border border-zinc-700 px-2 rounded cursor-pointer hover:border-amber-500">+</button>
+                    <button onclick="zoomManual(0.8)" class="text-white bg-zinc-900 border border-zinc-700 px-2 rounded cursor-pointer hover:border-amber-500">-</button>
                 </div>
                 <button onclick="resetView()" class="bttf-btn">RETOUR VERS LE FUTUR</button>
-                <div style="width: 50px"></div> <!-- Spacer balance -->
             </div>
             <div class="relative flex-1 w-full"><canvas id="loomChart"></canvas></div>
         </main>
     </div>
 
+    <div id="label-float"></div>
+
+    <div id="detail-card">
+        <button onclick="closeDetail()" class="absolute top-4 right-4 text-zinc-500 hover:text-white cursor-pointer text-2xl">&times;</button>
+        <h2 id="card-title" class="text-2xl font-black text-amber-500 uppercase mb-4"></h2>
+        <p id="card-desc" class="text-zinc-300 italic text-sm mb-6"></p>
+        <div class="grid grid-cols-2 gap-4 text-[10px] border-t border-zinc-800 pt-4">
+             <div>PHARMAKON: <br><span id="card-pharma" class="text-zinc-100 font-bold"></span></div>
+             <div>S-CURVE: <br>PHASE <span id="card-scurve" class="text-zinc-100 font-bold"></span> / 5</div>
+        </div>
+    </div>
+
     <script>
         const DATA_URL = "./loom_consolidated_v102.json";
         const COLORS = { "⚪ SINGULARITÉ": "#ffffff", "✨ NOOSPHÈRE": "#0ea5e9", "🔮 IMAGINAIRE": "#f472b6", "🟡 HARDWARE": "#fbbf24", "🔵 COGNITION": "#3b82f6", "🔴 RÉSEAU": "#ef4444", "🟣 ESPACE": "#a855f7", "🟢 BIOTECH": "#10b981", "☢️ ENTROPIE": "#f97316", "🏛️ POLITIQUE": "#d946ef" };
-        let loomChart;
+        let loomChart, isHoveringLabel = false;
+
+        const decToDate = v => { 
+            const y = Math.floor(v);
+            const q = Math.floor((v - y) * 4) + 1;
+            return 'T' + q + ' ' + y;
+        };
 
         function removeLoading() {
             const ls = document.getElementById('loading-screen');
-            const vp = document.getElementById('viewport');
-            if(ls) ls.style.opacity = '0';
-            if(vp) vp.style.opacity = '1';
-            setTimeout(function(){ if(ls) ls.remove(); }, 800);
+            if(ls) { ls.style.opacity = '0'; setTimeout(() => ls.remove(), 1000); }
+            document.getElementById('viewport').style.opacity = '1';
         }
 
         async function loadData() {
@@ -85,35 +104,37 @@
                 updateChart(json);
                 updateLegend(json);
                 updateFlux(json);
-                setTimeout(removeLoading, 1000);
-                setTimeout(resetView, 1200); // Focus initial
+                setTimeout(removeLoading, 1500);
+                setTimeout(resetView, 1600);
             } catch(e) { console.error(e); removeLoading(); }
         }
 
         function updateChart(data) {
             if(!loomChart) return;
-            const datasets = {};
-            data.sort(function(a,b){ return a.year - b.year; }).forEach(function(d){
+            const strands = {};
+            data.sort((a,b) => a.year - b.year).forEach(d => {
                 const cat = d.category || "DEFAUT";
-                if (!datasets[cat]) datasets[cat] = { label: cat, borderColor: COLORS[cat], backgroundColor: COLORS[cat], data: [], pointRadius: 4, tension: 0.4, borderWidth: 2 };
-                datasets[cat].data.push({ x: d.year, y: d.value, label: d.label, tipping: d.tipping });
+                if (!strands[cat]) strands[cat] = { label: cat, borderColor: COLORS[cat], backgroundColor: COLORS[cat], data: [], pointRadius: 4, tension: 0.4, borderWidth: 2 };
+                strands[cat].data.push({ x: d.year, y: d.value, ...d });
             });
-            loomChart.data.datasets = Object.values(datasets);
+            loomChart.data.datasets = Object.values(strands);
             loomChart.update();
         }
 
         function updateLegend(data) {
             const container = document.getElementById('legend-container');
             const counts = {};
-            data.forEach(function(d){ counts[d.category] = (counts[d.category] || 0) + 1; });
-            container.innerHTML = '<div class="section-title">STRANDS</div>';
-            Object.keys(COLORS).forEach(function(cat){
+            data.forEach(d => counts[d.category] = (counts[d.category] || 0) + 1);
+            const total = data.length;
+            container.innerHTML = '<div class="text-[10px] font-bold text-zinc-500 mb-2 uppercase">Cumul : ' + total + ' évènements</div>';
+            container.innerHTML += '<div class="section-title">Fils de Convergence</div>';
+            Object.keys(COLORS).sort().forEach(cat => {
                 if (!counts[cat]) return;
                 const div = document.createElement('div');
                 div.className = 'legend-item';
                 div.innerHTML = '<span>● ' + cat + '</span><span>' + counts[cat] + '</span>';
-                div.onclick = function() {
-                    const ds = loomChart.data.datasets.find(function(d){ return d.label === cat; });
+                div.onclick = () => {
+                    const ds = loomChart.data.datasets.find(d => d.label === cat);
                     if(ds) { ds.hidden = !ds.hidden; loomChart.update(); div.style.opacity = ds.hidden ? '0.3' : '1'; }
                 };
                 container.appendChild(div);
@@ -124,55 +145,87 @@
             const list = document.getElementById('activity-list');
             list.innerHTML = '';
             document.getElementById('flux-count').innerText = data.length;
-            data.slice(-15).reverse().forEach(function(d){
+            data.slice(-15).reverse().forEach(d => {
                 const li = document.createElement('li');
-                li.className = "mb-2 text-[9px] leading-tight";
-                li.innerHTML = '<span style="color:' + (COLORS[d.category] || '#fff') + '">●</span> ' + d.label;
+                li.className = "mb-2 leading-tight";
+                li.innerHTML = '<span style="color:' + COLORS[d.category] + '">●</span> ' + d.label;
                 list.appendChild(li);
             });
         }
 
-        function zoomManual(level) {
-            if(!loomChart) return;
-            loomChart.zoom(level);
-        }
-
+        function zoomManual(level) { if(loomChart) loomChart.zoom(level); }
         function resetView() {
-            if(!loomChart) return;
-            // Focus sur 1985 (Retour vers le Futur)
-            loomChart.options.scales.x.min = 1973;
-            loomChart.options.scales.x.max = 1997;
-            // On ajuste aussi l'axe Y pour voir le bas des courbes
-            loomChart.options.scales.y.min = 0;
-            loomChart.options.scales.y.max = 2000;
+            loomChart.options.scales.x.min = 1975;
+            loomChart.options.scales.x.max = 1995;
             loomChart.update();
         }
+        function closeDetail() { document.getElementById('detail-card').style.display = 'none'; }
+        
+        function showDetail(d) {
+            document.getElementById('card-title').innerText = d.label;
+            document.getElementById('card-desc').innerText = d.description || "Analyse en cours...";
+            document.getElementById('card-pharma').innerText = (d.pharmakon_remedy_percent || 50) + "% REMÈDE";
+            document.getElementById('card-scurve').innerText = d.s_curve_phase || "1";
+            document.getElementById('detail-card').style.display = 'block';
+        }
 
-        window.onload = function() {
+        window.onload = () => {
             const ctx = document.getElementById('loomChart');
             loomChart = new Chart(ctx, {
-                type: 'line', data: { datasets: [] },
+                type: 'line',
+                data: { datasets: [] },
                 options: {
                     responsive: true, maintainAspectRatio: false,
+                    onHover: (e, el) => {
+                        const canvas = e.native.target;
+                        canvas.style.cursor = (el.length || isHoveringLabel) ? 'pointer' : 'default';
+                        
+                        const f = document.getElementById('label-float');
+                        if (el.length) {
+                            const d = loomChart.data.datasets[el[0].datasetIndex].data[el[0].index];
+                            if (!d.tipping && d.category !== "☢️ ENTROPIE") {
+                                f.innerText = d.label;
+                                f.style.display = 'block';
+                                f.style.left = (e.x + 15) + 'px';
+                                f.style.top = (e.y - 15) + 'px';
+                                f.style.borderColor = COLORS[d.category];
+                            } else f.style.display = 'none';
+                        } else f.style.display = 'none';
+                    },
+                    onClick: (e, el) => { if(el.length) showDetail(loomChart.data.datasets[el[0].datasetIndex].data[el[0].index]); },
                     scales: {
-                        x: { type: 'linear', grid: { color: '#111' }, ticks: { color: '#444' } },
-                        y: { type: 'linear', position: 'right', grid: { color: '#050505' }, ticks: { color: '#222' } }
+                        x: { 
+                            type: 'linear', grid: { color: '#111' },
+                            ticks: { 
+                                color: '#666',
+                                callback: function(v) {
+                                    const zoom = this.chart.scales.x.max - this.chart.scales.x.min;
+                                    return (zoom < 3) ? decToDate(v) : Math.floor(v);
+                                }
+                            } 
+                        },
+                        y: { type: 'linear', position: 'right', grid: { color: '#050505' } }
                     },
                     plugins: {
                         legend: { display: false },
                         datalabels: {
                             color: '#fff', font: { size: 9, weight: 'bold' },
-                            backgroundColor: function(c) { return c.dataset.borderColor; },
-                            display: function(context) {
-                                const zoom = context.chart.scales.x.max - context.chart.scales.x.min;
-                                return context.dataset.data[context.dataIndex].tipping || zoom < 30;
+                            backgroundColor: c => c.dataset.borderColor,
+                            borderRadius: 2, padding: 4,
+                            display: c => {
+                                const d = c.dataset.data[c.dataIndex];
+                                return d.tipping || d.category === "☢️ ENTROPIE";
                             },
-                            formatter: function(v) { return v.label; },
-                            padding: 3, borderRadius: 2, clip: true
+                            formatter: v => v.label,
+                            listeners: {
+                                enter: () => { isHoveringLabel = true; },
+                                leave: () => { isHoveringLabel = false; }
+                            }
                         },
                         zoom: {
                             zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'xy' },
-                            pan: { enabled: true, mode: 'xy' }
+                            pan: { enabled: true, mode: 'xy' },
+                            limits: { x: { minRange: 0.25 } }
                         }
                     }
                 }
