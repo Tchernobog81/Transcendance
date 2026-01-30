@@ -1,0 +1,28 @@
+﻿name: Transcendance Sentinel 🤖
+
+on:
+  schedule:
+    - cron: '0 */6 * * *' # S'exécute toutes les 6 heures
+  workflow_dispatch:      # Permet de le lancer manuellement
+
+jobs:
+  veille:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests feedparser python-dotenv
+
+      - name: Run Sentinel Veille
+        env:
+          CLOUD_URL: ${{ secrets.CLOUD_URL }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        run: python sentinel.py
