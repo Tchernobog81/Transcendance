@@ -1,12 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>TRANSCENDANCE : Beta 1.1.1</title>
+    <title>TRANSCENDANCE : Beta 1.1.2</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,7 +17,7 @@
         aside { width: 220px; height: 100%; background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 20; }
         .brand-header { padding: 15px; border-bottom: 1px solid var(--border); }
         .brand-title { font-size: 10px; font-weight: 900; letter-spacing: 0.15em; color: #666; text-transform: uppercase; }
-        .brand-version { color: #10b981; }
+        .brand-version { color: #10b981; cursor: pointer; text-decoration: underline; }
         #flux-container { flex: 0 0 35%; border-bottom: 1px solid var(--border); padding: 15px; overflow: hidden; display: flex; flex-direction: column; }
         .section-title { font-size: 10px; color: var(--accent); font-weight: 800; text-transform: uppercase; margin-bottom: 8px; display: flex; justify-content: space-between; }
         #activity-list { overflow-y: auto; list-style: none; padding: 0; margin: 0; flex: 1; font-size: 10px; color: #bbb; }
@@ -27,24 +26,20 @@
         main { flex: 1; position: relative; height: 100%; background: var(--bg); display: flex; flex-direction: column; }
         .top-bar { height: 40px; border-bottom: 1px solid var(--border); display: flex; justify-content: center; align-items: center; z-index: 30; }
         .bttf-btn { background: linear-gradient(180deg, #ff9d00 0%, #ffff00 100%); color: black; padding: 5px 12px; border-radius: 2px; font-weight: 900; font-style: italic; transform: skewX(-10deg); font-size: 10px; cursor: pointer; border: none; }
-        #sync-hud { padding: 10px 15px; font-size: 8px; font-weight: bold; border-top: 1px solid var(--border); color: #444; }
+        #sync-hud { padding: 10px 15px; font-size: 8px; font-weight: bold; border-top: 1px solid var(--border); color: #444; white-space: pre-wrap; word-break: break-all; }
         #loading-screen { position: fixed; inset: 0; background: #010102; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s; }
         .boot-title { font-size: 1.5rem; font-weight: 900; letter-spacing: 0.5em; text-transform: uppercase; }
         #boot-info { font-size: 10px; color: #10b981; margin-top: 20px; font-family: 'JetBrains Mono'; height: 20px; }
-        #detail-card { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 600px; background: rgba(5,5,8,0.98); border: 1px solid #333; padding: 2rem; z-index: 5000; display: none; box-shadow: 0 0 50px #000; }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
     <div id="loading-screen">
         <div class="boot-title">Transcendance</div>
-        <div class="text-[10px] text-zinc-600 mt-2 uppercase">SYSTEM Beta 1.1.1</div>
-        <div id="boot-info">Initialisation...</div>
+        <div class="text-[10px] text-zinc-600 mt-2 uppercase">DEBUG CONSOLE Beta 1.1.2</div>
+        <div id="boot-info">Appel Cloud...</div>
     </div>
     
     <script>
-        setTimeout(() => { removeLoading(); }, 5000); // Bypass s�curit� augment� � 5s
-
         function removeLoading() {
             const ls = document.getElementById('loading-screen');
             const vp = document.getElementById('viewport');
@@ -56,14 +51,14 @@
     <div id="viewport">
         <aside>
             <div class="brand-header">
-                <div class="brand-title">Transcendance <span class="brand-version" onclick="location.href=location.href+`?refresh=`+Date.now()" style="cursor:pointer;text-decoration:underline" title="Forcer la mise � jour">Beta 1.1.1</span></div>
+                <div class="brand-title">Transcendance <span class="brand-version" onclick="location.reload(true)">Beta 1.1.2</span></div>
             </div>
             <div id="flux-container">
                 <div class="section-title"><span>Flux</span><span id="flux-count" class="text-zinc-500">0</span></div>
                 <ul id="activity-list" class="scrollbar-hide"></ul>
             </div>
             <div id="legend-container"></div>
-            <div id="sync-hud">CLOUD STATUS: INIT...</div>
+            <div id="sync-hud">LOG: INIT...</div>
         </aside>
         <main>
             <div class="top-bar"><button onclick="resetView()" class="bttf-btn">RETOUR VERS LE FUTUR</button></div>
@@ -71,40 +66,41 @@
         </main>
     </div>
 
-    <div id="detail-card">
-        <button onclick="closeDetail()" class="absolute top-4 right-4 text-zinc-500 hover:text-white text-2xl">&times;</button>
-        <h2 id="card-title" class="text-2xl font-black text-amber-500 uppercase mb-4"></h2>
-        <p id="card-desc" class="text-zinc-300 italic text-sm mb-6 leading-relaxed"></p>
-        <div class="grid grid-cols-2 gap-4 text-[10px] border-t border-zinc-800 pt-4">
-             <div>PHARMAKON: <br><span id="card-pharma" class="text-zinc-100 font-bold"></span></div>
-             <div>S-CURVE: <br>PHASE <span id="card-scurve" class="text-zinc-100 font-bold"></span> / 5</div>
-             <div class="col-span-2">CONVERGENCE: <p id="card-conv" class="text-zinc-400 mt-1 leading-tight"></p></div>
-        </div>
-    </div>
-
     <script>
-        const CLOUD_URL = 'https://script.google.com/macros/s/AKfycbwg-ZzMeSRyoaTRV-u824eQvnd8tHYxTsk-xDSK4vhYy42OnMpFrpumj2NSEaA45gP-/exec';
-        const COLORS = { "? SINGULARIT�": "#ffffff", "? NOOSPH�RE": "#0ea5e9", "?? IMAGINAIRE": "#f472b6", "?? HARDWARE": "#fbbf24", "?? COGNITION": "#3b82f6", "?? R�SEAU": "#ef4444", "?? ESPACE": "#a855f7", "?? BIOTECH": "#10b981", "?? ENTROPIE": "#f97316", "??? POLITIQUE": "#d946ef", "DEFAUT": "#9ca3af" };
+        const CLOUD_URL = "https://script.google.com/macros/s/AKfycbyMODqLS4BK8dcoKSQwZTANlGxCNy1fmG6MPQ2J40jPWAbq3zPDcRiFdXJRP4VycMB4/exec";
+        const COLORS = { "⚪ SINGULARITÉ": "#ffffff", "✨ NOOSPHÈRE": "#0ea5e9", "🔮 IMAGINAIRE": "#f472b6", "🟡 HARDWARE": "#fbbf24", "🔵 COGNITION": "#3b82f6", "🔴 RÉSEAU": "#ef4444", "🟣 ESPACE": "#a855f7", "🟢 BIOTECH": "#10b981", "☢️ ENTROPIE": "#f97316", "🏛️ POLITIQUE": "#d946ef" };
         let loomChart;
 
         async function loadData() {
             const hud = document.getElementById('sync-hud');
+            hud.innerText = "LOG: APPEL CLOUD EN COURS...";
+            
             try {
-                const res = await fetch(CLOUD_URL + '?t=' + Date.now());
-                if (!res.ok) throw new Error("Status: " + res.status);
-                const json = await res.json();
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000); // Timeout 8s
+
+                const res = await fetch(CLOUD_URL + '?t=' + Date.now(), { signal: controller.signal });
+                clearTimeout(timeoutId);
+
+                if (!res.ok) throw new Error("HTTP " + res.status);
                 
-                hud.innerText = "CLOUD STATUS: 200 OK (" + json.length + " items)";
+                const json = await res.json();
+                hud.innerText = "LOG: CLOUD RECU (" + json.length + " ITEMS)";
                 hud.style.color = "#10b981";
 
                 updateChart(json);
                 updateLegend(json);
                 updateFlux(json);
-                setTimeout(removeLoading, 500);
+                removeLoading();
+
             } catch(e) { 
-                console.error("Sync Error:", e);
-                hud.innerText = "CLOUD STATUS: ERROR (" + e.message + ")";
+                hud.innerText = "LOG: ERREUR FETCH \n" + e.message + "\nURL: " + CLOUD_URL.substring(0,40) + "...";
                 hud.style.color = "#ef4444";
+                console.error("Critical Error:", e);
+                
+                // Fallback Factice pour tester le moteur graphique
+                const fallback = [{year: 2026, value: 5000, label: "MODE AUTONOME ACTIVÉ", category: "⚪ SINGULARITÉ", tipping: true}];
+                updateChart(fallback);
                 removeLoading();
             }
         }
@@ -114,7 +110,7 @@
             const datasets = {};
             data.sort((a,b) => a.year - b.year).forEach(d => {
                 const cat = d.category || "DEFAUT";
-                if (!datasets[cat]) datasets[cat] = { label: cat, borderColor: COLORS[cat], backgroundColor: COLORS[cat], data: [], pointRadius: 4, tension: 0.4 };
+                if (!datasets[cat]) datasets[cat] = { label: cat, borderColor: COLORS[cat] || "#9ca3af", backgroundColor: COLORS[cat] || "#9ca3af", data: [], pointRadius: 4, tension: 0.4 };
                 datasets[cat].data.push({ x: d.year, y: d.value, ...d });
             });
             loomChart.data.datasets = Object.values(datasets);
@@ -126,11 +122,11 @@
             const counts = {};
             data.forEach(d => counts[d.category] = (counts[d.category] || 0) + 1);
             container.innerHTML = '<div class="section-title">STRANDS</div>';
-            Object.keys(COLORS).sort().forEach(cat => {
-                if (cat === "DEFAUT" || !counts[cat]) return;
+            Object.keys(COLORS).forEach(cat => {
+                if (!counts[cat]) return;
                 const div = document.createElement('div');
                 div.className = 'legend-item';
-                div.innerHTML = <span><span style="color:\">?</span> \</span><span class="text-zinc-600">\</span>;
+                div.innerHTML = <span>● \</span><span>\</span>;
                 container.appendChild(div);
             });
         }
@@ -139,33 +135,30 @@
             const list = document.getElementById('activity-list');
             list.innerHTML = '';
             document.getElementById('flux-count').innerText = data.length;
-            data.slice(-20).reverse().forEach(d => {
+            data.slice(-10).reverse().forEach(d => {
                 const li = document.createElement('li');
-                li.className = "mb-2 flex items-start gap-2";
-                li.innerHTML = <span style="color:\">?</span> <span>\</span>;
+                li.className = "mb-2 text-[9px]";
+                li.innerHTML = <span style="color:\">●</span> \;
                 list.appendChild(li);
             });
         }
 
-        function zoomTo(year) { if(loomChart) { loomChart.options.scales.x.min = year - 10; loomChart.options.scales.x.max = year + 10; loomChart.update(); } }
-        function resetView() { zoomTo(1985); }
-        function closeDetail() { document.getElementById('detail-card').style.display = 'none'; }
+        function resetView() { if(loomChart) { loomChart.options.scales.x.min = 1980; loomChart.options.scales.x.max = 2030; loomChart.update(); } }
 
         window.onload = () => {
             try {
-                loomChart = new Chart(document.getElementById('loomChart'), {
+                const ctx = document.getElementById('loomChart');
+                loomChart = new Chart(ctx, {
                     type: 'line', data: { datasets: [] },
                     options: {
                         responsive: true, maintainAspectRatio: false,
-                        onClick: (e, el) => { if(el.length) showDetail(loomChart.data.datasets[el[0].datasetIndex].data[el[0].index]); },
-                        scales: { x: { type: 'linear', grid: { color: '#111' } }, y: { type: 'linear', position: 'right', grid: { color: '#050505' } } },
-                        plugins: { legend: { display: false }, datalabels: { color: '#fff', formatter: v => v.label, display: c => c.chart.scales.x.max - c.chart.scales.x.min < 40 } }
+                        scales: { x: { type: 'linear', grid: { color: '#111' } }, y: { type: 'linear', position: 'right' } },
+                        plugins: { legend: { display: false }, datalabels: { color: '#fff', display: true, formatter: v => v.label } }
                     }
                 });
-            } catch(e) { console.error("Chart Error:", e); }
+            } catch(e) { console.error("Chart Crash", e); }
             loadData();
         };
     </script>
 </body>
 </html>
-
