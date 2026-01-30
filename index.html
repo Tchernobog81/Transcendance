@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>TRANSCENDANCE : Beta Beta 1.0.5</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js?v=Beta 1.0.5"></script>
+    <title>TRANSCENDANCE : Beta 1.0.6</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom?v=Beta 1.0.5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
@@ -38,15 +38,15 @@
 <body>
     <div id="loading-screen">
         <div class="boot-title">Transcendance</div>
-        <div class="text-[10px] text-zinc-600 mt-2">SYSTEM Beta Beta 1.0.5</div>
-        <div id="boot-info">Initialisation des protocoles...</div>
+        <div class="text-[10px] text-zinc-600 mt-2 uppercase">SYSTEM Beta 1.0.6</div>
+        <div id="boot-info">Connexion nerveuse...</div>
         <div id="emergency-skip" onclick="removeLoading()">[ FORCER L'ENTRÉE ]</div>
     </div>
     
     <div id="viewport">
         <aside>
             <div class="brand-header">
-                <div class="brand-title">Transcendance <span class="brand-version">Beta 1.0.5</span></div>
+                <div class="brand-title">Transcendance <span class="brand-version">Beta 1.0.6</span></div>
             </div>
             <div id="flux-container">
                 <div class="section-title"><span>Flux</span><span id="flux-count" class="text-zinc-500">0</span></div>
@@ -61,7 +61,7 @@
     </div>
 
     <div id="detail-card">
-        <button onclick="closeDetail()" class="absolute top-4 right-4 text-zinc-500">&times;</button>
+        <button onclick="closeDetail()" class="absolute top-4 right-4 text-zinc-500 hover:text-white text-2xl">&times;</button>
         <h2 id="card-title" class="text-2xl font-black text-amber-500 uppercase mb-4"></h2>
         <p id="card-desc" class="text-zinc-300 italic text-sm mb-6 leading-relaxed"></p>
         <div class="grid grid-cols-2 gap-4 text-[10px] border-t border-zinc-800 pt-4">
@@ -78,9 +78,11 @@
 
         const BOOT_MESSAGES = [
             "Établissement du lien neural...",
-            "Scan de la Noosphère...",
-            "Doomsday Clock : 90 secondes.",
-            "Kardashev Scale : 0.73...",
+            "Calibration des Strands...",
+            "Aspiration de la Noosphère...",
+            "Calcul de l'Entropie...",
+            "Maillage de l'Imaginaire...",
+            "Synchronisation Cloud...",
             "Lien établi. Bienvenue."
         ];
 
@@ -93,29 +95,38 @@
             setTimeout(() => { if(ls) ls.remove(); }, 800);
         }
 
-        async function loadData(init = false) {
-            if(init) {
-                let i = 0;
-                bootInterval = setInterval(() => {
-                    const info = document.getElementById('boot-info');
-                    if(info) info.innerText = BOOT_MESSAGES[i % BOOT_MESSAGES.length];
-                    i++;
-                }, 400);
-                // Sécurité absolue : montre le bouton skip après 5s et force le retrait après 8s
-                setTimeout(() => { document.getElementById('emergency-skip').style.display = 'block'; }, 5000);
-                setTimeout(removeLoading, 8000);
-            }
+        function startBootAnimation() {
+            let i = 0;
+            bootInterval = setInterval(() => {
+                const info = document.getElementById('boot-info');
+                if(info) info.innerText = BOOT_MESSAGES[i % BOOT_MESSAGES.length];
+                i++;
+            }, 500);
+            setTimeout(() => { 
+                const skip = document.getElementById('emergency-skip');
+                if(skip) skip.style.display = 'block'; 
+            }, 4000);
+        }
+
+        async function loadData() {
             try {
                 const res = await fetch(CLOUD_URL + '?t=' + Date.now());
+                if (!res.ok) throw new Error("HTTP error");
                 const json = await res.json();
                 updateChart(json);
                 updateLegend(json);
                 updateFlux(json);
-                if (init) setTimeout(removeLoading, 2000);
-            } catch(e) { console.error("Sync Error:", e); }
+                // On attend un peu pour que l'utilisateur voie la séquence de boot
+                setTimeout(removeLoading, 1500);
+            } catch(e) { 
+                console.error("Sync Error:", e);
+                document.getElementById('boot-info').innerText = "ERREUR : Mode autonome activé.";
+                setTimeout(removeLoading, 2000);
+            }
         }
 
         function updateChart(data) {
+            if(!loomChart) return;
             const datasets = {};
             data.sort((a,b) => a.year - b.year).forEach(d => {
                 const cat = d.category || "DEFAUT";
@@ -158,18 +169,20 @@
 
         function showDetail(d) {
             document.getElementById('card-title').innerText = d.label;
-            document.getElementById('card-desc').innerText = d.description || "Pas de description.";
+            document.getElementById('card-desc').innerText = d.description || "Analyse indisponible.";
             document.getElementById('card-pharma').innerText = \% REMÈDE / \% POISON;
             document.getElementById('card-scurve').innerText = d.s_curve_phase || "?";
-            document.getElementById('card-conv').innerText = d.convergences || d.grand_filter_analysis || "N/A";
+            document.getElementById('card-conv').innerText = d.convergences || "Maillage en cours...";
             document.getElementById('detail-card').style.display = 'block';
         }
 
-        function zoomTo(year) { loomChart.options.scales.x.min = year - 10; loomChart.options.scales.x.max = year + 10; loomChart.update(); }
+        function zoomTo(year) { if(loomChart) { loomChart.options.scales.x.min = year - 10; loomChart.options.scales.x.max = year + 10; loomChart.update(); } }
         function resetView() { zoomTo(1985); }
         function closeDetail() { document.getElementById('detail-card').style.display = 'none'; }
 
         window.onload = () => {
+            startBootAnimation(); // Lancement immédiat de l'animation
+            
             const ctx = document.getElementById('loomChart');
             loomChart = new Chart(ctx, {
                 type: 'line',
@@ -187,7 +200,8 @@
                             color: '#fff', font: { size: 9, weight: 'bold' },
                             backgroundColor: c => c.dataset.borderColor,
                             display: (context) => {
-                                const zoom = context.chart.scales.x.max - context.chart.scales.x.min;
+                                const chart = context.chart;
+                                const zoom = chart.scales.x.max - chart.scales.x.min;
                                 return context.dataset.data[context.dataIndex].tipping || zoom < 40;
                             },
                             formatter: v => v.label,
@@ -197,7 +211,7 @@
                     }
                 }
             });
-            loadData(true);
+            loadData(); // Lancement de la data en parallèle
         };
     </script>
 </body>
