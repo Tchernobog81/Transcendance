@@ -4,17 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>TRANSCENDANCE : Beta Beta 1.0.4</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>TRANSCENDANCE : Beta Beta 1.0.5</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js?v=Beta 1.0.5"></script>
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom?v=Beta 1.0.5"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Inter:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #010102; --sidebar-bg: #050508; --border: rgba(255,255,255,0.08); --accent: #fbbf24; }
         html, body { margin: 0; padding: 0; width: 100vw; height: 100dvh; background-color: var(--bg); overflow: hidden; position: fixed; font-family: 'JetBrains Mono', monospace; color: white; }
-        #viewport { position: absolute; inset: 0; display: flex; }
+        #viewport { position: absolute; inset: 0; display: flex; opacity: 0; transition: opacity 1s; }
         aside { width: 220px; height: 100%; background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 20; }
         .brand-header { padding: 15px; border-bottom: 1px solid var(--border); }
         .brand-title { font-size: 10px; font-weight: 900; letter-spacing: 0.15em; color: #666; text-transform: uppercase; }
@@ -27,13 +27,10 @@
         main { flex: 1; position: relative; height: 100%; background: var(--bg); display: flex; flex-direction: column; }
         .top-bar { height: 40px; border-bottom: 1px solid var(--border); display: flex; justify-content: center; align-items: center; z-index: 30; }
         .bttf-btn { background: linear-gradient(180deg, #ff9d00 0%, #ffff00 100%); color: black; padding: 5px 12px; border-radius: 2px; font-weight: 900; font-style: italic; transform: skewX(-10deg); font-size: 10px; cursor: pointer; border: none; }
-        
-        /* Loading Screen Sexy */
         #loading-screen { position: fixed; inset: 0; background: #010102; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s; }
-        .boot-title { font-size: 1.5rem; font-weight: 900; letter-spacing: 0.5em; text-transform: uppercase; animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-        #boot-info { font-size: 10px; color: #10b981; margin-top: 20px; font-family: 'JetBrains Mono'; height: 20px; text-align: center; }
-        
+        .boot-title { font-size: 1.5rem; font-weight: 900; letter-spacing: 0.5em; text-transform: uppercase; }
+        #boot-info { font-size: 10px; color: #10b981; margin-top: 20px; font-family: 'JetBrains Mono'; height: 20px; }
+        #emergency-skip { margin-top: 30px; font-size: 10px; text-decoration: underline; color: #444; cursor: pointer; display: none; }
         #detail-card { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 600px; background: rgba(5,5,8,0.98); border: 1px solid #333; padding: 2rem; z-index: 5000; display: none; box-shadow: 0 0 50px #000; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
     </style>
@@ -41,14 +38,15 @@
 <body>
     <div id="loading-screen">
         <div class="boot-title">Transcendance</div>
-        <div class="text-[10px] text-zinc-600 mt-2">EXOCORTEX OS Beta 1.0.4</div>
+        <div class="text-[10px] text-zinc-600 mt-2">SYSTEM Beta Beta 1.0.5</div>
         <div id="boot-info">Initialisation des protocoles...</div>
+        <div id="emergency-skip" onclick="removeLoading()">[ FORCER L'ENTRÉE ]</div>
     </div>
     
     <div id="viewport">
         <aside>
             <div class="brand-header">
-                <div class="brand-title">Transcendance <span class="brand-version">Beta 1.0.4</span></div>
+                <div class="brand-title">Transcendance <span class="brand-version">Beta 1.0.5</span></div>
             </div>
             <div id="flux-container">
                 <div class="section-title"><span>Flux</span><span id="flux-count" class="text-zinc-500">0</span></div>
@@ -63,7 +61,7 @@
     </div>
 
     <div id="detail-card">
-        <button onclick="closeDetail()" class="absolute top-4 right-4 text-zinc-500 hover:text-white text-2xl">&times;</button>
+        <button onclick="closeDetail()" class="absolute top-4 right-4 text-zinc-500">&times;</button>
         <h2 id="card-title" class="text-2xl font-black text-amber-500 uppercase mb-4"></h2>
         <p id="card-desc" class="text-zinc-300 italic text-sm mb-6 leading-relaxed"></p>
         <div class="grid grid-cols-2 gap-4 text-[10px] border-t border-zinc-800 pt-4">
@@ -80,42 +78,40 @@
 
         const BOOT_MESSAGES = [
             "Établissement du lien neural...",
-            "Scan de la Noosphère en cours...",
-            "Doomsday Clock : 90 secondes avant minuit.",
-            "Kardashev Scale : 0.73... upgrade recommandé.",
-            "Analyse Pharmakon : Équilibre remède/poison détecté.",
-            "Chargement des archives de l'imaginaire...",
-            "Synchronisation avec le Grand Filtre...",
-            "Calcul de la singularité : Probabilité 84%.",
-            "Injection de sarcasme dans le noyau...",
-            "Optimisation de la détection des signaux faibles...",
-            "Lien établi. Bienvenue, Tchernobog81."
+            "Scan de la Noosphère...",
+            "Doomsday Clock : 90 secondes.",
+            "Kardashev Scale : 0.73...",
+            "Lien établi. Bienvenue."
         ];
-
-        function startBootSequence() {
-            let i = 0;
-            bootInterval = setInterval(() => {
-                const info = document.getElementById('boot-info');
-                if(info) info.innerText = BOOT_MESSAGES[i % BOOT_MESSAGES.length];
-                i++;
-            }, 250);
-        }
 
         function removeLoading() {
             clearInterval(bootInterval);
             const ls = document.getElementById('loading-screen');
-            if(ls) { ls.style.opacity = '0'; setTimeout(() => ls.remove(), 800); }
+            const vp = document.getElementById('viewport');
+            if(ls) ls.style.opacity = '0';
+            if(vp) vp.style.opacity = '1';
+            setTimeout(() => { if(ls) ls.remove(); }, 800);
         }
 
         async function loadData(init = false) {
-            if(init) { startBootSequence(); setTimeout(removeLoading, 4000); }
+            if(init) {
+                let i = 0;
+                bootInterval = setInterval(() => {
+                    const info = document.getElementById('boot-info');
+                    if(info) info.innerText = BOOT_MESSAGES[i % BOOT_MESSAGES.length];
+                    i++;
+                }, 400);
+                // Sécurité absolue : montre le bouton skip après 5s et force le retrait après 8s
+                setTimeout(() => { document.getElementById('emergency-skip').style.display = 'block'; }, 5000);
+                setTimeout(removeLoading, 8000);
+            }
             try {
                 const res = await fetch(CLOUD_URL + '?t=' + Date.now());
                 const json = await res.json();
                 updateChart(json);
                 updateLegend(json);
                 updateFlux(json);
-                if (init) removeLoading();
+                if (init) setTimeout(removeLoading, 2000);
             } catch(e) { console.error("Sync Error:", e); }
         }
 
@@ -191,8 +187,7 @@
                             color: '#fff', font: { size: 9, weight: 'bold' },
                             backgroundColor: c => c.dataset.borderColor,
                             display: (context) => {
-                                const chart = context.chart;
-                                const zoom = chart.scales.x.max - chart.scales.x.min;
+                                const zoom = context.chart.scales.x.max - context.chart.scales.x.min;
                                 return context.dataset.data[context.dataIndex].tipping || zoom < 40;
                             },
                             formatter: v => v.label,
