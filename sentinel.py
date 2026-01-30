@@ -1,4 +1,4 @@
-Ôªøimport os
+import os
 import json
 import requests
 import feedparser
@@ -11,31 +11,31 @@ load_dotenv()
 
 # Configuration
 CLOUD_URL = os.getenv("CLOUD_URL")
-# Si tu as une cl√© Gemini, elle sera utilis√©e ici
+# Si tu as une clÈ Gemini, elle sera utilisÈe ici
 GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY") 
 
 FEEDS = [
-    "https://news.google.com/rss/search?q=singularit√©+technologique+IA+biotech&hl=fr&gl=FR&ceid=FR:fr",
+    "https://news.google.com/rss/search?q=singularitÈ+technologique+IA+biotech&hl=fr&gl=FR&ceid=FR:fr",
     "https://www.technologyreview.com/feed/",
     "https://wired.com/feed/rss"
 ]
 
 def analyze_event(title, summary, link):
     """
-    Analyse l'√©v√©nement. v148 : D√©terminisme et pas de N/A.
+    Analyse l'ÈvÈnement. v148 : DÈterminisme et pas de N/A.
     """
     seed_val = zlib.crc32(title.encode('utf-8'))
     random.seed(seed_val)
     
-    # Heuristique de cat√©gorie simplifi√©e
-    category = "üîµ COGNITION"
-    if any(word in title.lower() for word in ["spacex", "mars", "orbite"]): category = "üü£ ESPACE"
-    elif any(word in title.lower() for word in ["crispr", "adn", "bio"]): category = "üü¢ BIOTECH"
-    elif any(word in title.lower() for word in ["menace", "risque", "climat", "guerre"]): category = "‚ò¢Ô∏è ENTROPIE"
+    # Heuristique de catÈgorie simplifiÈe
+    category = "?? COGNITION"
+    if any(word in title.lower() for word in ["spacex", "mars", "orbite"]): category = "?? ESPACE"
+    elif any(word in title.lower() for word in ["crispr", "adn", "bio"]): category = "?? BIOTECH"
+    elif any(word in title.lower() for word in ["menace", "risque", "climat", "guerre"]): category = "?? ENTROPIE"
     
     # Pharmakon Analysis (v148)
     remedy = random.randint(30, 70)
-    if category == "‚ò¢Ô∏è ENTROPIE": remedy = random.randint(5, 20)
+    if category == "?? ENTROPIE": remedy = random.randint(5, 20)
     
     event = {
         "year": datetime.now().year + (datetime.now().month / 12),
@@ -49,13 +49,13 @@ def analyze_event(title, summary, link):
         "s_curve_phase": 4,
         "pharmakon_remedy_percent": remedy,
         "pharmakon_poison_percent": 100 - remedy,
-        "convergences": f"Signal d√©tect√© en {category}. Convergence syst√©mique automatique.",
+        "convergences": f"Signal dÈtectÈ en {category}. Convergence systÈmique automatique.",
         "grand_filter_analysis": "Analyse en attente de traitement profond par l'Exocortex."
     }
     return event
 
 def run_veille():
-    print("--- TRANSCENDANCE SENTINEL : START VEILLE ---")
+    print("--- TRANSCENDANCE SENTINEL Beta 1.0.0 : START VEILLE ---")
     if not CLOUD_URL:
         print("Erreur : CLOUD_URL manquante.")
         return
@@ -64,7 +64,7 @@ def run_veille():
     for url in FEEDS:
         print(f"Scanning feed: {url[:50]}...")
         feed = feedparser.parse(url)
-        for entry in feed.entries[:3]: # On prend les 3 plus r√©cents par flux
+        for entry in feed.entries[:3]: # On prend les 3 plus rÈcents par flux
             event = analyze_event(entry.title, entry.get('summary', ''), entry.link)
             new_events.append(event)
 
