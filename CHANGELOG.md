@@ -1,7 +1,7 @@
 ﻿# 🌌 CHANGELOG - TRANSCENDANCE
 
-## [Beta 1.1.3] - 2026-01-30
+## [Beta 1.1.4] - 2026-01-30
 ### Fix
-- **Architecture :** Déplacement de tous les scripts en fin de document pour éviter les ReferenceErrors (Root Cause du blocage).
-- **UX :** Système de boot déverrouillé par vérification d'existence du DOM.
-- **Branding :** Nettoyage des étiquettes de version.
+- **Syntax :** Correction de l'erreur 'Unexpected token <' (PowerShell escape conflict).
+- **Core :** Migration des templates JS vers des strings classiques pour éviter les conflits de backticks.
+- **Boot :** Séquence de démarrage priorisée et sécurisée.

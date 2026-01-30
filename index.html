@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>TRANSCENDANCE : Beta 1.1.3</title>
+    <title>TRANSCENDANCE : Beta 1.1.4</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
@@ -17,7 +17,7 @@
         aside { width: 240px; height: 100%; background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 20; }
         .brand-header { padding: 15px; border-bottom: 1px solid var(--border); }
         .brand-title { font-size: 10px; font-weight: 900; letter-spacing: 0.15em; color: #666; text-transform: uppercase; }
-        .brand-version { color: #10b981; cursor: pointer; }
+        .brand-version { color: #10b981; }
         #flux-container { flex: 0 0 35%; border-bottom: 1px solid var(--border); padding: 15px; overflow: hidden; display: flex; flex-direction: column; }
         .section-title { font-size: 10px; color: var(--accent); font-weight: 800; text-transform: uppercase; margin-bottom: 8px; display: flex; justify-content: space-between; }
         #activity-list { overflow-y: auto; list-style: none; padding: 0; margin: 0; flex: 1; font-size: 10px; color: #bbb; }
@@ -29,26 +29,27 @@
         #sync-hud { padding: 10px 15px; font-size: 8px; font-weight: bold; border-top: 1px solid var(--border); color: #444; white-space: pre-wrap; word-break: break-all; }
         #loading-screen { position: fixed; inset: 0; background: #010102; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s; }
         .boot-title { font-size: 1.5rem; font-weight: 900; letter-spacing: 0.5em; text-transform: uppercase; }
+        .boot-msg { font-size: 10px; color: #10b981; margin-top: 20px; font-family: 'JetBrains Mono'; height: 20px; }
     </style>
 </head>
 <body>
     <div id="loading-screen">
         <div class="boot-title">Transcendance</div>
-        <div class="text-[10px] text-zinc-600 mt-2">SYSTEM Beta 1.1.3</div>
-        <div id="boot-info" class="text-[10px] text-emerald-500 mt-5">Connexion neural...</div>
+        <div class="text-[10px] text-zinc-600 mt-2">SYSTEM Beta 1.1.4</div>
+        <div id="boot-info" class="boot-msg">Initialisation...</div>
     </div>
     
     <div id="viewport">
         <aside>
             <div class="brand-header">
-                <div class="brand-title">Transcendance <span class="brand-version" onclick="location.reload(true)">Beta 1.1.3</span></div>
+                <div class="brand-title">Transcendance <span class="brand-version" onclick="location.reload(true)">Beta 1.1.4</span></div>
             </div>
             <div id="flux-container">
                 <div class="section-title"><span>Flux Entrant</span><span id="flux-count" class="text-zinc-500">0</span></div>
                 <ul id="activity-list"></ul>
             </div>
             <div id="legend-container"></div>
-            <div id="sync-hud">LOG: CONNECTING...</div>
+            <div id="sync-hud">LOG: WAITING...</div>
         </aside>
         <main>
             <div class="top-bar"><button onclick="resetView()" class="bttf-btn">RETOUR VERS LE FUTUR</button></div>
@@ -56,7 +57,6 @@
         </main>
     </div>
 
-    <!-- TOUS LES SCRIPTS EN BAS -->
     <script>
         const CLOUD_URL = "https://script.google.com/macros/s/AKfycbyMODqLS4BK8dcoKSQwZTANlGxCNy1fmG6MPQ2J40jPWAbq3zPDcRiFdXJRP4VycMB4/exec";
         const COLORS = { "⚪ SINGULARITÉ": "#ffffff", "✨ NOOSPHÈRE": "#0ea5e9", "🔮 IMAGINAIRE": "#f472b6", "🟡 HARDWARE": "#fbbf24", "🔵 COGNITION": "#3b82f6", "🔴 RÉSEAU": "#ef4444", "🟣 ESPACE": "#a855f7", "🟢 BIOTECH": "#10b981", "☢️ ENTROPIE": "#f97316", "🏛️ POLITIQUE": "#d946ef" };
@@ -65,31 +65,27 @@
         function removeLoading() {
             const ls = document.getElementById('loading-screen');
             const vp = document.getElementById('viewport');
-            if(ls) ls.style.opacity = '0';
+            if(ls) { ls.style.opacity = '0'; setTimeout(function(){ ls.remove(); }, 800); }
             if(vp) vp.style.opacity = '1';
-            setTimeout(() => { if(ls) ls.remove(); }, 800);
         }
 
         async function loadData() {
             const hud = document.getElementById('sync-hud');
             try {
                 const res = await fetch(CLOUD_URL + '?t=' + Date.now());
-                if (!res.ok) throw new Error("Cloud status: " + res.status);
+                if (!res.ok) throw new Error("Status: " + res.status);
                 const json = await res.json();
                 
-                hud.innerText = "CLOUD OK: " + json.length + " ITEMS";
+                hud.innerText = "CLOUD SYNC: " + json.length + " ITEMS";
                 hud.style.color = "#10b981";
 
                 updateChart(json);
                 updateLegend(json);
                 updateFlux(json);
-                removeLoading();
+                setTimeout(removeLoading, 1000);
             } catch(e) { 
                 hud.innerText = "CLOUD ERROR: " + e.message;
                 hud.style.color = "#ef4444";
-                console.warn("Falling back to local simulation...");
-                const fallback = [{year: 2026, value: 5000, label: "CONNEXION ECHOUEE (VOIR CONSOLE)", category: "⚪ SINGULARITÉ", tipping: true}];
-                updateChart(fallback);
                 removeLoading();
             }
         }
@@ -116,7 +112,7 @@
                 if (!counts[cat]) return;
                 const div = document.createElement('div');
                 div.className = 'legend-item';
-                div.innerHTML = <span>● \</span><span>\</span>;
+                div.innerHTML = '<span>● ' + cat + '</span><span>' + counts[cat] + '</span>';
                 container.appendChild(div);
             });
         }
@@ -129,7 +125,7 @@
             data.slice(-10).reverse().forEach(d => {
                 const li = document.createElement('li');
                 li.className = "mb-2 text-[9px]";
-                li.innerHTML = <span style="color:\">●</span> \;
+                li.innerHTML = '<span style="color:' + (COLORS[d.category] || '#fff') + '">●</span> ' + d.label;
                 list.appendChild(li);
             });
         }
@@ -137,8 +133,8 @@
         function resetView() { if(loomChart) { loomChart.options.scales.x.min = 1980; loomChart.options.scales.x.max = 2030; loomChart.update(); } }
 
         window.onload = () => {
-            // SECURITE FINALE : Si après 4s on est encore là, on dégage
-            setTimeout(removeLoading, 4000);
+            // Master Bypass 5s
+            setTimeout(removeLoading, 5000);
 
             try {
                 const ctx = document.getElementById('loomChart');
@@ -146,11 +142,12 @@
                     type: 'line', data: { datasets: [] },
                     options: {
                         responsive: true, maintainAspectRatio: false,
+                        onClick: (e, el) => { if(el.length) console.log(loomChart.data.datasets[el[0].datasetIndex].data[el[0].index]); },
                         scales: { x: { type: 'linear', grid: { color: '#111' } }, y: { type: 'linear', position: 'right' } },
                         plugins: { legend: { display: false }, datalabels: { color: '#fff', display: true, formatter: v => v.label } }
                     }
                 });
-            } catch(e) { console.error("Moteur graphique bloqué :", e); }
+            } catch(e) { console.error("Chart Fail:", e); }
             loadData();
         };
     </script>
