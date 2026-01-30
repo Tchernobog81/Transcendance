@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>TRANSCENDANCE : Beta 1.1.6</title>
+    <title>TRANSCENDANCE : Beta 1.1.7</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -21,36 +22,45 @@
         .section-title { font-size: 10px; color: var(--accent); font-weight: 800; text-transform: uppercase; margin-bottom: 8px; display: flex; justify-content: space-between; }
         #activity-list { overflow-y: auto; list-style: none; padding: 0; margin: 0; flex: 1; font-size: 10px; color: #bbb; }
         #legend-container { flex: 1; padding: 15px; overflow-y: auto; }
-        .legend-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; font-size: 9px; font-weight: 700; color: #888; }
+        .legend-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; font-size: 9px; font-weight: 700; color: #888; cursor: pointer; }
         main { flex: 1; position: relative; height: 100%; background: var(--bg); display: flex; flex-direction: column; }
-        .top-bar { height: 40px; border-bottom: 1px solid var(--border); display: flex; justify-content: center; align-items: center; z-index: 30; }
+        .top-bar { height: 40px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; z-index: 30; padding: 0 15px; }
         .bttf-btn { background: linear-gradient(180deg, #ff9d00 0%, #ffff00 100%); color: black; padding: 5px 12px; border-radius: 2px; font-weight: 900; font-style: italic; transform: skewX(-10deg); font-size: 10px; cursor: pointer; border: none; }
-        #sync-hud { padding: 10px 15px; font-size: 8px; font-weight: bold; border-top: 1px solid var(--border); color: #444; }
+        .nav-btn { background: #111; border: 1px solid #333; color: #888; width: 24px; height: 24px; border-radius: 2px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+        .nav-btn:hover { border-color: var(--accent); color: white; }
         #loading-screen { position: fixed; inset: 0; background: #010102; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s; }
         .boot-title { font-size: 1.5rem; font-weight: 900; letter-spacing: 0.5em; text-transform: uppercase; }
+        #sync-hud { padding: 10px 15px; font-size: 8px; font-weight: bold; border-top: 1px solid var(--border); color: #444; }
     </style>
 </head>
 <body>
     <div id="loading-screen">
         <div class="boot-title">Transcendance</div>
-        <div class="text-[10px] text-zinc-600 mt-2 uppercase">NATIVE SYSTEM Beta 1.1.6</div>
-        <div id="boot-info" class="text-[10px] text-emerald-500 mt-5">Loading Local DB...</div>
+        <div class="text-[10px] text-zinc-600 mt-2 uppercase">SYSTÈME Beta 1.1.7</div>
+        <div id="boot-info" class="text-[10px] text-emerald-500 mt-5">Chargement de la conscience...</div>
     </div>
     
     <div id="viewport">
         <aside>
             <div class="brand-header">
-                <div class="brand-title">Transcendance <span class="brand-version" onclick="location.reload(true)">Beta 1.1.6</span></div>
+                <div class="brand-title">Transcendance <span class="brand-version">Beta 1.1.7</span></div>
             </div>
             <div id="flux-container">
                 <div class="section-title"><span>Flux Entrant</span><span id="flux-count" class="text-zinc-500">0</span></div>
                 <ul id="activity-list"></ul>
             </div>
             <div id="legend-container"></div>
-            <div id="sync-hud">NATIVE DB: READY</div>
+            <div id="sync-hud">DB: NATIVE</div>
         </aside>
         <main>
-            <div class="top-bar"><button onclick="resetView()" class="bttf-btn">RETOUR VERS LE FUTUR</button></div>
+            <div class="top-bar">
+                <div class="flex gap-2">
+                    <button onclick="zoomManual(1.2)" class="nav-btn">+</button>
+                    <button onclick="zoomManual(0.8)" class="nav-btn">-</button>
+                </div>
+                <button onclick="resetView()" class="bttf-btn">RETOUR VERS LE FUTUR</button>
+                <div style="width: 50px"></div> <!-- Spacer balance -->
+            </div>
             <div class="relative flex-1 w-full"><canvas id="loomChart"></canvas></div>
         </main>
     </div>
@@ -63,30 +73,21 @@
         function removeLoading() {
             const ls = document.getElementById('loading-screen');
             const vp = document.getElementById('viewport');
-            if(ls) { ls.style.opacity = '0'; setTimeout(function(){ ls.remove(); }, 800); }
+            if(ls) ls.style.opacity = '0';
             if(vp) vp.style.opacity = '1';
+            setTimeout(function(){ if(ls) ls.remove(); }, 800);
         }
 
         async function loadData() {
-            const hud = document.getElementById('sync-hud');
             try {
-                // FETCH LOCAL (No CORS issues)
                 const res = await fetch(DATA_URL + '?t=' + Date.now());
-                if (!res.ok) throw new Error("File not found");
                 const json = await res.json();
-                
-                hud.innerText = "NATIVE DB: " + json.length + " ITEMS";
-                hud.style.color = "#10b981";
-
                 updateChart(json);
                 updateLegend(json);
                 updateFlux(json);
                 setTimeout(removeLoading, 1000);
-            } catch(e) { 
-                hud.innerText = "DB ERROR: " + e.message;
-                hud.style.color = "#ef4444";
-                removeLoading();
-            }
+                setTimeout(resetView, 1200); // Focus initial
+            } catch(e) { console.error(e); removeLoading(); }
         }
 
         function updateChart(data) {
@@ -94,8 +95,8 @@
             const datasets = {};
             data.sort(function(a,b){ return a.year - b.year; }).forEach(function(d){
                 const cat = d.category || "DEFAUT";
-                if (!datasets[cat]) datasets[cat] = { label: cat, borderColor: COLORS[cat] || "#9ca3af", backgroundColor: COLORS[cat] || "#9ca3af", data: [], pointRadius: 4, tension: 0.4 };
-                datasets[cat].data.push({ x: d.year, y: d.value, label: d.label });
+                if (!datasets[cat]) datasets[cat] = { label: cat, borderColor: COLORS[cat], backgroundColor: COLORS[cat], data: [], pointRadius: 4, tension: 0.4, borderWidth: 2 };
+                datasets[cat].data.push({ x: d.year, y: d.value, label: d.label, tipping: d.tipping });
             });
             loomChart.data.datasets = Object.values(datasets);
             loomChart.update();
@@ -111,6 +112,10 @@
                 const div = document.createElement('div');
                 div.className = 'legend-item';
                 div.innerHTML = '<span>● ' + cat + '</span><span>' + counts[cat] + '</span>';
+                div.onclick = function() {
+                    const ds = loomChart.data.datasets.find(function(d){ return d.label === cat; });
+                    if(ds) { ds.hidden = !ds.hidden; loomChart.update(); div.style.opacity = ds.hidden ? '0.3' : '1'; }
+                };
                 container.appendChild(div);
             });
         }
@@ -119,29 +124,59 @@
             const list = document.getElementById('activity-list');
             list.innerHTML = '';
             document.getElementById('flux-count').innerText = data.length;
-            data.slice(-10).reverse().forEach(function(d){
+            data.slice(-15).reverse().forEach(function(d){
                 const li = document.createElement('li');
-                li.className = "mb-2 text-[9px]";
+                li.className = "mb-2 text-[9px] leading-tight";
                 li.innerHTML = '<span style="color:' + (COLORS[d.category] || '#fff') + '">●</span> ' + d.label;
                 list.appendChild(li);
             });
         }
 
-        function resetView() { if(loomChart) { loomChart.options.scales.x.min = 1980; loomChart.options.scales.x.max = 2030; loomChart.update(); } }
+        function zoomManual(level) {
+            if(!loomChart) return;
+            loomChart.zoom(level);
+        }
+
+        function resetView() {
+            if(!loomChart) return;
+            // Focus sur 1985 (Retour vers le Futur)
+            loomChart.options.scales.x.min = 1973;
+            loomChart.options.scales.x.max = 1997;
+            // On ajuste aussi l'axe Y pour voir le bas des courbes
+            loomChart.options.scales.y.min = 0;
+            loomChart.options.scales.y.max = 2000;
+            loomChart.update();
+        }
 
         window.onload = function() {
-            setTimeout(removeLoading, 5000);
-            try {
-                const ctx = document.getElementById('loomChart');
-                loomChart = new Chart(ctx, {
-                    type: 'line', data: { datasets: [] },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        scales: { x: { type: 'linear', grid: { color: '#111' } }, y: { type: 'linear', position: 'right' } },
-                        plugins: { legend: { display: false }, datalabels: { color: '#fff', display: true, formatter: function(v){ return v.label; } } }
+            const ctx = document.getElementById('loomChart');
+            loomChart = new Chart(ctx, {
+                type: 'line', data: { datasets: [] },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        x: { type: 'linear', grid: { color: '#111' }, ticks: { color: '#444' } },
+                        y: { type: 'linear', position: 'right', grid: { color: '#050505' }, ticks: { color: '#222' } }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            color: '#fff', font: { size: 9, weight: 'bold' },
+                            backgroundColor: function(c) { return c.dataset.borderColor; },
+                            display: function(context) {
+                                const zoom = context.chart.scales.x.max - context.chart.scales.x.min;
+                                return context.dataset.data[context.dataIndex].tipping || zoom < 30;
+                            },
+                            formatter: function(v) { return v.label; },
+                            padding: 3, borderRadius: 2, clip: true
+                        },
+                        zoom: {
+                            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'xy' },
+                            pan: { enabled: true, mode: 'xy' }
+                        }
                     }
-                });
-            } catch(e) { console.error(e); }
+                }
+            });
             loadData();
         };
     </script>
