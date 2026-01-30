@@ -1,12 +1,9 @@
 ﻿# 🌌 CHANGELOG - TRANSCENDANCE
 
-## [Beta 1.0.1] - 2026-01-30
-### Corrigé
-- **UI :** Suppression totale des références résiduelles à la v148.
-- **Légende :** Restauration des compteurs d'événements par catégorie.
-- **Graphique :** Passage à une échelle Y linéaire pour éviter l'écrasement des courbes.
-- **Labels :** Ajustement de la densité d'affichage des étiquettes (visibles plus tôt).
-- **Branding :** Correction du logo et des titres pour Beta 1.0.1.
-
-## [Beta 1.0.0] - 2026-01-30
-- Initialisation du projet Transcendance.
+## [Beta 1.0.2] - 2026-01-30
+### Fix
+- **Git :** Résolution des conflits de rebase entre local et origin.
+- **UI :** Suppression définitive des résidus V148 (Boot & Title).
+- **Scale :** Axe Y repassé en Linéaire pour une meilleure lisibilité des strands.
+- **Labels :** Affichage optimisé (Condition: tipping OR zoom < 40 ans).
+- **Legend :** Restauration des compteurs d'événements par catégorie.
